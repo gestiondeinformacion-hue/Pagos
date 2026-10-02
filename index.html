@@ -6,6 +6,9 @@
 <title>Portal Ejecutivo de Pagos y Auditoría de Salud</title>
 <!-- Fuentes Tipográficas -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<!-- PapaParse para lectura perfecta de CSV con separador | -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
 <style>
 :root {
   --bg: #f8fafc;
@@ -463,7 +466,7 @@ tfoot td {
       </div>
       <div class="badge-tag">
         <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        Datos Cargados · 2026
+        Datos Auditados · 2026
       </div>
     </div>
   </div>
@@ -601,62 +604,23 @@ const cols = [
 const sel = { conc: $('fC'), ent: $('fE'), nit:$('fN') };
 let sortK = 'mn', sortD = 1, cur = [], rows = [];
 
-function parseCSV(text) {
-  if (!text || typeof text !== 'string') return [];
-  // Normalizar retornos de carro \r\n y BOM
-  const cleanText = text.replace(/^\uFEFF/, '').replace(/\r/g, '').trim();
-  const lines = cleanText.split('\n').map(l => l.trim()).filter(x => x.length > 0);
-  if (lines.length < 2) return [];
-
-  let sep = '|';
-  if (lines[0].includes('|')) sep = '|';
-  else if (lines[0].includes(';')) sep = ';';
-  else if (lines[0].includes(',')) sep = ',';
-
-  const headers = lines[0].split(sep).map(s => s.trim().replace(/^["']|["']$/g, '').toLowerCase());
+function procesarFilasPapa(resultsData) {
+  if (!resultsData || !resultsData.length) return [];
   
-  const findIx = (candidates) => {
-    for (let c of candidates) {
-      const idx = headers.findIndex(h => h === c || h.includes(c));
-      if (idx !== -1) return idx;
+  return resultsData.map((d, i) => {
+    // Mapeo flexible independientemente de mayúsculas o variaciones de nombres
+    const nit = d.NIT || d.nit || d.Nit || '';
+    const ent = d.Entidad || d.entidad || d.ENTIDAD || d.IPS || 'Entidad';
+    const anio = parseInt(d.Año || d.Anio || d.anio || d.AÑO || 2026) || 2026;
+    const mn = parseInt(d.Mes_Num || d.mes_num || d.MesNum || d.MES_NUM || (i % 12) + 1) || 1;
+    const mes = d.Mes || d.mes || d.MES || MES[mn - 1] || 'Ene';
+    const fecha = d.Fecha || d.fecha || d.FECHA || `${anio}-${String(mn).padStart(2,'0')}-01`;
+    const conc = d.Concepto || d.concepto || d.CONCEPTO || 'Evento';
+
+    let rawVal = d.Valor !== undefined ? d.Valor : (d.valor !== undefined ? d.valor : '0');
+    if (typeof rawVal === 'string') {
+      rawVal = rawVal.replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
     }
-    return -1;
-  };
-
-  const ixNIT = findIx(['nit']);
-  const ixEnt = findIx(['entidad', 'ips', 'prestador']);
-  const ixAnio = findIx(['año', 'anio', 'year']);
-  const ixMesNum = findIx(['mes_num', 'mesnum', 'num_mes', 'mes_numero']);
-  const ixMes = findIx(['mes']);
-  const ixFecha = findIx(['fecha', 'fechagiro']);
-  const ixConc = findIx(['concepto', 'conc']);
-  const ixValor = findIx(['valor', 'monto', 'val']);
-
-  return lines.slice(1).map((l, i) => {
-    const p = l.split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
-    if (p.length < 2) return null;
-
-    const nit = ixNIT !== -1 && p[ixNIT] !== undefined ? p[ixNIT] : '';
-    const ent = ixEnt !== -1 && p[ixEnt] !== undefined ? p[ixEnt] : 'Entidad';
-    const anio = ixAnio !== -1 && !isNaN(+p[ixAnio]) ? +p[ixAnio] : 2026;
-    const mn = ixMesNum !== -1 && !isNaN(+p[ixMesNum]) ? +p[ixMesNum] : 1;
-    const mes = ixMes !== -1 && p[ixMes] ? p[ixMes] : (MES[mn - 1] || 'Ene');
-    const fecha = ixFecha !== -1 && p[ixFecha] ? p[ixFecha] : `${anio}-${String(mn).padStart(2, '0')}-01`;
-    const conc = ixConc !== -1 && p[ixConc] ? p[ixConc] : 'Evento';
-    
-    let rawVal = ixValor !== -1 && p[ixValor] !== undefined ? p[ixValor] : '0';
-    rawVal = rawVal.replace(/\$/g, '').replace(/\s/g, '');
-    if (rawVal.includes('.') && rawVal.includes(',')) {
-      rawVal = rawVal.replace(/\./g, '').replace(',', '.');
-    } else if (rawVal.includes('.')) {
-      const parts = rawVal.split('.');
-      if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
-        rawVal = rawVal.replace(/\./g, '');
-      }
-    } else if (rawVal.includes(',')) {
-      rawVal = rawVal.replace(',', '.');
-    }
-
     const valor = parseFloat(rawVal) || 0;
 
     return { nit, ent, anio, mn, mes, fecha, conc, valor };
@@ -880,42 +844,45 @@ $('up').onclick = () =>$('file').click();
 $('file').onchange = e => {
   const f = e.target.files[0];
   if (!f) return;
-  const rd = new FileReader();
-  rd.onload = () => {
-    const parsed = parseCSV(rd.result);
-    if (!parsed.length) {
-      alert('Aviso: No se pudieron extraer filas con los separadores estándar.');
-      return;
+  Papa.parse(f, {
+    header: true,
+    delimiter: "|",
+    skipEmptyLines: true,
+    complete: function(results) {
+      const parsed = procesarFilasPapa(results.data);
+      if (parsed.length > 0) {
+        rows = parsed;
+        Object.values(sel).forEach(s => s.value = '');
+        update();
+      } else {
+        alert("No se pudieron leer registros del archivo subido. Revisa la estructura.");
+      }
     }
-    rows = parsed;
-    Object.values(sel).forEach(s => s.value = '');
-    update();
-  };
-  rd.readAsText(f, 'utf-8');
+  });
 };
 
 function cargarDefault() {
-  // Rutas posibles en el despliegue de Vercel
-  const rutas = ["data/datos_dinamica.csv", "./data/datos_dinamica.csv", "/data/datos_dinamica.csv", "datos_dinamica.csv"];
+  // Ruta exacta dentro de la carpeta data según la estructura de GitHub
+  const rutaCSV = "data/datos_dinamica.csv";
 
-  let intentar = (idx) => {
-    if (idx >= rutas.length) return;
-
-    fetch(rutas[idx])
-      .then(r => { if (!r.ok) throw new Error(); return r.text(); })
-      .then(t => {
-        const parsed = parseCSV(t);
-        if (parsed.length > 0) {
-          rows = parsed;
-          update();
-        } else {
-          intentar(idx + 1);
-        }
-      })
-      .catch(() => intentar(idx + 1));
-  };
-
-  intentar(0);
+  Papa.parse(rutaCSV, {
+    download: true,
+    header: true,
+    delimiter: "|",
+    skipEmptyLines: true,
+    complete: function(results) {
+      const parsed = procesarFilasPapa(results.data);
+      if (parsed.length > 0) {
+        rows = parsed;
+        update();
+      } else {
+        console.error("El archivo se leyó pero no devolvió filas válidas.");
+      }
+    },
+    error: function(err) {
+      console.error("Error cargando CSV desde data/datos_dinamica.csv:", err);
+    }
+  });
 }
 
 cargarDefault();
