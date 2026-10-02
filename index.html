@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Portal Ejecutivo de Pagos y Facturación Sector Salud 2026</title>
+<title>Portal Ejecutivo de Pagos y Auditoría de Salud</title>
 <!-- Fuentes Tipográficas -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -20,7 +20,6 @@
   --accent: #d9822b;
   --accent-light: #fef3c7;
   --danger: #be123c;
-  --danger-light: #ffe4e6;
   --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
   --radius: 12px;
 }
@@ -39,7 +38,6 @@
     --accent: #fbbf24;
     --accent-light: #2c2208;
     --danger: #f43f5e;
-    --danger-light: #311319;
     --shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
 }
@@ -100,7 +98,6 @@ h1 {
   gap: 6px;
 }
 
-/* Tarjetas y Paneles */
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -110,7 +107,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Filtros */
 .filters-grid {
   display: grid;
   grid-template-columns: 1.2fr 2fr 1.2fr auto;
@@ -174,7 +170,6 @@ button.btn-sec:hover {
   background: var(--border);
 }
 
-/* Grid KPIs */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -221,12 +216,8 @@ button.btn-sec:hover {
 .kpi-desc {
   font-size: 12px;
   color: var(--text-mute);
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
-/* Panel de Análisis e Hallazgos Ejecutivos */
 .analysis-panel {
   background: var(--primary-light);
   border: 1px solid var(--primary);
@@ -268,7 +259,6 @@ button.btn-sec:hover {
   color: var(--primary);
 }
 
-/* Gráficos */
 .chart-header {
   display: flex;
   justify-content: space-between;
@@ -345,7 +335,6 @@ button.btn-sec:hover {
   border-radius: 3px;
 }
 
-/* Gráfico de Barras Mensual */
 .bar-chart {
   display: flex;
   align-items: flex-end;
@@ -374,7 +363,6 @@ button.btn-sec:hover {
   border-radius: 4px 4px 0 0;
   min-height: 4px;
   transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
 }
 
 .bar-fill:hover {
@@ -387,10 +375,8 @@ button.btn-sec:hover {
   margin-bottom: 4px;
   color: var(--text-main);
   text-align: center;
-  word-break: break-all;
 }
 
-/* Tabla */
 .table-wrap {
   overflow-x: auto;
   margin-top: 12px;
@@ -477,7 +463,7 @@ tfoot td {
       </div>
       <div class="badge-tag">
         <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        Datos Auditados · 2026
+        Datos Cargados · 2026
       </div>
     </div>
   </div>
@@ -536,9 +522,7 @@ tfoot td {
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       Análisis Dinámico de Hallazgos y Auditoría
     </div>
-    <ul class="analysis-list" id="analysis-container">
-      <!-- Generado dinámicamente -->
-    </ul>
+    <ul class="analysis-list" id="analysis-container"></ul>
   </div>
 
   <!-- Gráfico de Tendencia SVG con Valores Completos -->
@@ -603,6 +587,58 @@ const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','
 const PAL = ['#0e7c6b','#d9822b','#3b6fd4','#c23b6b','#7a5bc7','#14b8a6','#f59e0b'];
 const $ = id => document.getElementById(id);
 
+const DATASET_DEMO = [
+  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":57541621},
+  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":51786149},
+  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":46593227},
+  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":81203649},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":704366508},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":1000071684},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":703878080},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":550046992},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":564131077},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":527823993},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":562198146},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":468307005},
+  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":1080325441},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":5109883983},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":3864599649},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":4160886087},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":3759813406},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":3929478513},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":4545068427},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":4828465925},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":4452956838},
+  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":4304733685},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":2536644618},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":2800250138},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":2526354982},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":2504648679},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":2645783690},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":2272595653},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":1959802625},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":2883939901},
+  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":2679842771},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Cápita","valor":536439200},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Cápita","valor":558609162},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Cápita","valor":775321207},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Cápita","valor":565100198},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Cápita","valor":544428792},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Cápita","valor":711703610},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Cápita","valor":596147459},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Cápita","valor":604651440},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Cápita","valor":602659580},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":3543505400},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":4207272603},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":3924237224},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":3532517344},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":3587994775},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":3698749751},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":3895106886},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":4100089626},
+  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":4188824715}
+];
+
 const fmt = new Intl.NumberFormat('es-CO', { 
   style: 'currency', 
   currency: 'COP', 
@@ -614,39 +650,65 @@ const cols = [
   ['mes','Mes'],['fecha','Fecha Giro'],['conc','Concepto'],['valor','Valor Pagado ($)']
 ];
 
-const sel = { conc: $('fC'), ent: $('fE'), nit:$('fN') };
+const sel = { conc: $('fC'), ent: $('fE'), nit: $('fN') };
 let sortK = 'mn', sortD = 1, cur = [], rows = [];
 
-// Parseador de CSV con separador de barra vertical (|)
 function parseCSV(text) {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(x => x.trim());
+  if (!text || typeof text !== 'string') return [];
+  const cleanText = text.replace(/^\uFEFF/, '').trim();
+  const lines = cleanText.split(/\r?\n/).filter(x => x.trim());
   if (lines.length < 2) return [];
-  const h = lines[0].split('|').map(s => s.trim());
-  const ix = n => h.indexOf(n);
 
-  return lines.slice(1).map(l => {
-    const p = l.split('|');
-    const anio = +p[ix('Año')] || 2026;
-    const mn = +p[ix('Mes_Num')] || 1;
-    const val = +p[ix('Valor')] || 0;
-    return {
-      nit: p[ix('NIT')] ? p[ix('NIT')].trim() : '',
-      ent: p[ix('Entidad')] ? p[ix('Entidad')].trim() : '',
-      anio: anio,
-      mn: mn,
-      mes: p[ix('Mes')] ? p[ix('Mes')].trim() : MES[mn-1],
-      fecha: p[ix('Fecha')] ? p[ix('Fecha')].trim() : `${anio}-${String(mn).padStart(2,'0')}-01`,
-      conc: p[ix('Concepto')] ? p[ix('Concepto')].trim() : '',
-      valor: val
-    };
-  });
+  let sep = '|';
+  if (lines[0].includes('|')) sep = '|';
+  else if (lines[0].includes(';')) sep = ';';
+  else if (lines[0].includes(',')) sep = ',';
+
+  const headers = lines[0].split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
+  
+  const findIx = (names) => {
+    for (let name of names) {
+      const idx = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  };
+
+  const ixNIT = findIx(['nit']);
+  const ixEnt = findIx(['entidad', 'entidad prestadora', 'ips']);
+  const ixAnio = findIx(['año', 'anio', 'year']);
+  const ixMesNum = findIx(['mes_num', 'mesnum', 'num_mes', 'mes_numero']);
+  const ixMes = findIx(['mes']);
+  const ixFecha = findIx(['fecha', 'fecha_giro', 'fechagiro']);
+  const ixConc = findIx(['concepto', 'conc']);
+  const ixValor = findIx(['valor', 'monto', 'valor_pagado', 'val']);
+
+  return lines.slice(1).map((l, i) => {
+    const p = l.split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
+    if (p.length < 2) return null;
+
+    const nit = ixNIT !== -1 && p[ixNIT] ? p[ixNIT] : '';
+    const ent = ixEnt !== -1 && p[ixEnt] ? p[ixEnt] : 'Entidad';
+    const anio = ixAnio !== -1 && !isNaN(+p[ixAnio]) ? +p[ixAnio] : 2026;
+    const mn = ixMesNum !== -1 && !isNaN(+p[ixMesNum]) ? +p[ixMesNum] : (i % 12) + 1;
+    const mes = ixMes !== -1 && p[ixMes] ? p[ixMes] : MES[mn - 1] || 'Ene';
+    const fecha = ixFecha !== -1 && p[ixFecha] ? p[ixFecha] : `${anio}-${String(mn).padStart(2, '0')}-01`;
+    const conc = ixConc !== -1 && p[ixConc] ? p[ixConc] : 'Evento';
+    
+    let rawVal = ixValor !== -1 ? p[ixValor] : '0';
+    if (typeof rawVal === 'string') {
+      rawVal = rawVal.replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
+    }
+    const valor = parseFloat(rawVal) || 0;
+
+    return { nit, ent, anio, mn, mes, fecha, conc, valor };
+  }).filter(r => r && r.valor > 0);
 }
 
 function match(r, skip) {
   return Object.keys(sel).every(k => k === skip || !sel[k].value || r[k] === sel[k].value);
 }
 
-// Filtros dependientes conectados
 function fillOptions() {
   for (const k in sel) {
     const keep = sel[k].value;
@@ -674,7 +736,6 @@ function render() {
   const mesesDistintos = new Set(cur.map(r => r.mn)).size || 1;
   const prom = tot / mesesDistintos;
 
-  // Calculo Pico
   const porMes = {};
   cur.forEach(r => porMes[r.mn] = (porMes[r.mn] || 0) + r.valor);
   let maxMesVal = 0, maxMesNum = 1;
@@ -685,14 +746,12 @@ function render() {
     }
   });
 
-  // Render KPIs
   $('kT').textContent = fmt.format(tot);$('kP').textContent = fmt.format(prom);
   $('kPico').textContent = MES[maxMesNum - 1] \vert{}\vert{} '-';$('kPicoSub').textContent = maxMesVal > 0 ? fmt.format(maxMesVal) : 'Sin datos';
   $('kE').textContent = new Set(cur.map(r => r.nit)).size;
   $('kR').textContent = `${cur.length.toLocaleString('es-CO')} registros filtrados`;
   $('foot').textContent = fmt.format(tot);$('empty').hidden = cur.length > 0;
 
-  // Render Tabla
   $('head').innerHTML = cols.map(([k, t]) => 
     `<th data-k="${k}" class="${k === 'valor' ? 'num' : ''}" ${k === sortK ? `aria-sort="${sortD > 0 ? 'ascending' : 'descending'}"` : ''} tabindex="0">${t}${k === sortK ? (sortD > 0 ? ' ▲' : ' ▼') : ''}</th>`
   ).join('');
@@ -711,13 +770,11 @@ function render() {
     </tr>`;
   }).join('');
 
-  // Renderizar componentes gráficos y análisis
   generarAnalisis(cur, tot, porMes);
   drawLineChart();
   drawBarChart(porMes);
 }
 
-// Módulo de Análisis Automático de Datos y Hallazgos
 function generarAnalisis(data, total, porMes) {
   const container = $('analysis-container');
   if (!data.length) {
@@ -727,44 +784,39 @@ function generarAnalisis(data, total, porMes) {
 
   const hallazgos = [];
 
-  // 1. Análisis de Concentración (Pareto)
   const entTotales = {};
   data.forEach(r => entTotales[r.ent] = (entTotales[r.ent] || 0) + r.valor);
   const entOrdenadas = Object.entries(entTotales).sort((a,b) => b[1] - a[1]);
   if (entOrdenadas.length > 0) {
     const topEnt = entOrdenadas[0];
-    const pctTop = ((topEnt[1] / total) * 100).toFixed(1);
-    hallazgos.push(`<strong>Concentración Principal:</strong> La entidad <span>${topEnt[0]}</span> concentra el <strong>${pctTop}%</strong> del gasto total del filtro (<span>${fmt.format(topEnt[1])}</span>).`);
+    const pctTop = total > 0 ? ((topEnt[1] / total) * 100).toFixed(1) : 0;
+    hallazgos.push(`<strong>Concentración Principal:</strong> La entidad <span>${topEnt[0]}</span> representa el <strong>${pctTop}%</strong> del total filtrado (<span>${fmt.format(topEnt[1])}</span>).`);
   }
 
-  // 2. Comportamiento Cápita vs Evento
   const concTotales = {};
   data.forEach(r => concTotales[r.conc] = (concTotales[r.conc] || 0) + r.valor);
   const totalCapita = concTotales['Cápita'] || 0;
   const totalEvento = concTotales['Evento'] || 0;
   if (totalCapita > 0 || totalEvento > 0) {
-    const pctCap = ((totalCapita / total) * 100).toFixed(1);
-    const pctEve = ((totalEvento / total) * 100).toFixed(1);
-    hallazgos.push(`<strong>Modalidad de Contratación:</strong> Pago por Evento representa el <strong>${pctEve}%</strong> (${fmt.format(totalEvento)}), mientras que Cápita abarca el <strong>${pctCap}%</strong> (${fmt.format(totalCapita)}).`);
+    const pctCap = total > 0 ? ((totalCapita / total) * 100).toFixed(1) : 0;
+    const pctEve = total > 0 ? ((totalEvento / total) * 100).toFixed(1) : 0;
+    hallazgos.push(`<strong>Modalidad de Pago:</strong> Evento representa el <strong>${pctEve}%</strong> (${fmt.format(totalEvento)}), y Cápita abarca el <strong>${pctCap}%</strong> (${fmt.format(totalCapita)}).`);
   }
 
-  // 3. Picos y Valles Mensuales
   const valoresMes = Object.values(porMes);
   if (valoresMes.length > 1) {
     const maxV = Math.max(...valoresMes);
     const minV = Math.min(...valoresMes);
-    const difPct = (((maxV - minV) / minV) * 100).toFixed(0);
-    hallazgos.push(`<strong>Variabilidad Mensual:</strong> Existe una brecha del <strong>${difPct}%</strong> entre el mes de mayor desembolso (${fmt.format(maxV)}) y el de menor gasto (${fmt.format(minV)}).`);
+    const difPct = minV > 0 ? (((maxV - minV) / minV) * 100).toFixed(0) : 0;
+    hallazgos.push(`<strong>Variabilidad Mensual:</strong> Brecha del <strong>${difPct}%</strong> entre el mes de mayor costo (${fmt.format(maxV)}) y el de menor costo (${fmt.format(minV)}).`);
   }
 
-  // 4. Continuidad y Consistencia
   const nitsUnicos = new Set(data.map(r => r.nit)).size;
-  hallazgos.push(`<strong>Alcance de Selección:</strong> Se están evaluando <strong>${nitsUnicos} prestador(es)</strong> a lo largo de ${Object.keys(porMes).length} mes(es) con registro efectivo.`);
+  hallazgos.push(`<strong>Alcance Auditado:</strong> Evaluación de <strong>${nitsUnicos} prestador(es)</strong> distribuidos en ${Object.keys(porMes).length} mes(es) con giro efectivo.`);
 
   container.innerHTML = hallazgos.map(h => `<li class="analysis-item">${h}</li>`).join('');
 }
 
-// Gráfico de Líneas SVG con Valores Completos
 function drawLineChart() {
   const g = {};
   cur.forEach(r => {
@@ -828,7 +880,6 @@ function drawLineChart() {
   $('line-svg').classList.toggle('many', ks.length > 2);$('lg').innerHTML = lg;
 }
 
-// Gráfico de Barras Mensual
 function drawBarChart(porMes) {
   const maxV = Math.max(1, ...Object.values(porMes));
   $('bar-chart').innerHTML = MES.map((m, i) => {
@@ -849,7 +900,6 @@ function update() {
   render();
 }
 
-// Event Listeners
 Object.values(sel).forEach(s => s.addEventListener('change', update));
 $('tableSearch').addEventListener('input', render);
 
@@ -874,9 +924,9 @@ $('file').onchange = e => {
   if (!f) return;
   const rd = new FileReader();
   rd.onload = () => {
-    const parsed = parseCSV(rd.result).filter(r => r.nit && !isNaN(r.valor));
+    const parsed = parseCSV(rd.result);
     if (!parsed.length) {
-      alert('Error en formato del archivo. Debe ser separado por | y tener encabezados válidos (NIT, Entidad, Año, Mes_Num, Mes, Concepto, Valor).');
+      alert('Aviso: No se pudieron extraer filas con el separadores estándar. Verifica las columnas.');
       return;
     }
     rows = parsed;
@@ -886,16 +936,25 @@ $('file').onchange = e => {
   rd.readAsText(f, 'utf-8');
 };
 
-// Carga Inicial Automática del CSV local
 function cargarDefault() {
-  const rutas = ["data/datos_dinamica.csv", "datos_dinamica.csv"];
+  const rutas = ["datos_dinamica.csv", "data/datos_dinamica.csv", "./datos_dinamica.csv"];
+  let cargado = false;
+
   let intentar = idx => {
-    if (idx >= rutas.length) return;
+    if (idx >= rutas.length) {
+      if (!cargado && rows.length === 0) {
+        rows = DATASET_DEMO;
+        update();
+      }
+      return;
+    }
+
     fetch(rutas[idx])
       .then(r => { if (!r.ok) throw new Error(); return r.text(); })
       .then(t => {
-        const parsed = parseCSV(t).filter(r => r.nit && !isNaN(r.valor));
+        const parsed = parseCSV(t);
         if (parsed.length > 0) {
+          cargado = true;
           rows = parsed;
           update();
         } else {
@@ -904,6 +963,7 @@ function cargarDefault() {
       })
       .catch(() => intentar(idx + 1));
   };
+
   intentar(0);
 }
 
