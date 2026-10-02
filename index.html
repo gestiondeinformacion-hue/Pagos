@@ -1,574 +1,571 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análisis de Pagos 2026</title>
-    <!-- Google Fonts & Bootstrap 5 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Plotly.js & PapaParse -->
-    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <style>
-        :root {
-            --bg-body: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --primary: #0f766e;
-            --primary-light: #14b8a6;
-            --accent: #f59e0b;
-            --danger: #f43f5e;
-            --border: #e2e8f0;
-            --radius: 12px;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Análisis de Pagos por Entidad 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef2f1;
+  --panel: #ffffff;
+  --ink: #14302d;
+  --mute: #5d726f;
+  --line: #d5dfdd;
+  --acc: #0e7c6b;
+  --acc2: #e0f1ee;
+  --bar: #0e7c6b;
+  --accent-orange: #d9822b;
+  box-sizing: border-box;
+}
 
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            padding: 28px 20px;
-        }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1b1a;
+    --panel: #162624;
+    --ink: #e3efec;
+    --mute: #92aaa6;
+    --line: #2a3f3c;
+    --acc: #4fc3ad;
+    --acc2: #1d3633;
+    --bar: #4fc3ad;
+    --accent-orange: #f59e0b;
+  }
+}
 
-        /* Header & Filters Card */
-        .dashboard-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            margin-bottom: 24px;
-        }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif;
+}
 
-        .filter-label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
 
-        .form-select {
-            border-color: var(--border);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            padding: 8px 12px;
-            box-shadow: none !important;
-        }
+h1 {
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
 
-        .form-select:focus {
-            border-color: var(--primary);
-        }
+.sub {
+  color: var(--mute);
+  margin: 0 0 20px;
+  font-size: 14px;
+}
 
-        /* KPI Cards */
-        .kpi-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
 
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-            background: var(--primary);
-        }
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
 
-        .kpi-title {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--mute);
+  margin-bottom: 6px;
+}
 
-        .kpi-value {
-            font-size: 1.65rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-top: 8px;
-            letter-spacing: -0.5px;
-        }
+select, button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  width: 100%;
+}
 
-        .kpi-sub {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--accent);
-            margin-top: 4px;
-        }
+select:focus, button:focus {
+  outline: 2px solid var(--acc);
+  outline-offset: 1px;
+}
 
-        /* Charts & Tabs */
-        .chart-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            margin-bottom: 24px;
-            height: 500px;
-        }
+button {
+  cursor: pointer;
+  width: auto;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
 
-        .nav-tabs {
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 24px;
-        }
+button.p {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
 
-        .nav-tabs .nav-link {
-            border: none;
-            color: var(--text-secondary);
-            font-weight: 600;
-            padding: 12px 24px;
-            font-size: 0.95rem;
-            border-bottom: 3px solid transparent;
-            background: transparent;
-        }
+button.p:hover {
+  opacity: 0.9;
+}
 
-        .nav-tabs .nav-link.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
+.kpis {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
 
-        .btn-reset {
-            background-color: #f1f5f9;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            font-weight: 600;
-            border-radius: 8px;
-            font-size: 0.875rem;
-        }
+.kpi b {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-top: 4px;
+}
 
-        .btn-reset:hover {
-            background-color: #e2e8f0;
-        }
-    </style>
+.kpi span {
+  color: var(--mute);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lh {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+#line {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+#line .pt text {
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+#line.many .pt text {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#line.many .pt:hover text {
+  opacity: 1;
+}
+
+#line .pt circle {
+  cursor: pointer;
+}
+
+#line text {
+  fill: var(--mute);
+  font: 11px "IBM Plex Mono", monospace;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 140px;
+  margin-top: 12px;
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  font-size: 12px;
+  color: var(--mute);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.col i {
+  display: block;
+  width: 100%;
+  background: var(--bar);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+}
+
+.lg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 10px 0 6px;
+  font-size: 13px;
+}
+
+.lg span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lg i {
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.tw {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 760px;
+}
+
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+th {
+  font-weight: 600;
+  color: var(--mute);
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+}
+
+th[aria-sort] {
+  color: var(--acc);
+}
+
+td.n, th.n {
+  text-align: right;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+td.e {
+  white-space: normal;
+  min-width: 240px;
+}
+
+tbody tr:hover {
+  background: var(--acc2);
+}
+
+tfoot td {
+  font-weight: 600;
+  border-bottom: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--acc2);
+  color: var(--acc);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--mute);
+}
+
+@media (max-width: 860px) {
+  .filters { grid-template-columns: 1fr 1fr; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 520px) {
+  .filters { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
+<div class="wrap">
+  <h1>Análisis de pagos por entidad, 2026</h1>
+  <p class="sub">Filtra por concepto, entidad o NIT. Las opciones de los desplegables se ajustan automáticamente entre sí.</p>
 
-<div class="container-fluid max-width-xxl">
-    <!-- Encabezado -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold m-0 text-slate-900">📊 Dashboard de Análisis de Pagos</h3>
-            <p class="text-muted m-0 small">Visualización ejecutiva por Entidad, Concepto y Tendencia Mensual · 2026</p>
-        </div>
+  <div class="panel filters">
+    <div><label for="fC">Concepto</label><select id="fC"></select></div>
+    <div><label for="fE">Entidad</label><select id="fE"></select></div>
+    <div><label for="fN">NIT</label><select id="fN"></select></div>
+    <button id="clr">Limpiar filtros</button>
+  </div>
+
+  <div class="kpis">
+    <div class="panel kpi"><span>Total del filtro</span><b id="kT">$ 0</b></div>
+    <div class="panel kpi"><span>Promedio mensual</span><b id="kP">$ 0</b></div>
+    <div class="panel kpi"><span>Registros</span><b id="kR">0</b></div>
+    <div class="panel kpi"><span>Entidades</span><b id="kE">0</b></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px">
+    <div class="lh" id="lt">Tendencia de pagos</div>
+    <div style="color:var(--mute);font-size:13px" id="ls"></div>
+    <div class="lg" id="lg"></div>
+    <div style="color:var(--mute);font-size:12px;margin-top:4px" id="lnote">Valores en pesos ($).</div>
+    <svg id="line" viewBox="0 0 800 320" role="img" aria-label="Gráfico de líneas de tendencia de pagos por mes"></svg>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px">
+    <span style="color:var(--mute);font-size:13px;font-weight:500">Total pagado por mes</span>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="color:var(--mute);font-size:13px">Haz clic en un encabezado para ordenar la tabla.</span>
+      <span style="display:flex;gap:8px">
+        <button id="up" class="p">Cargar otro CSV</button>
+        <input type="file" id="file" accept=".csv,.txt" hidden>
+      </span>
     </div>
-
-    <!-- Panel de Filtros Desplegables -->
-    <div class="dashboard-card">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-5">
-                <div class="filter-label">Entidad</div>
-                <select id="filter-entidad" class="form-select">
-                    <option value="ALL">-- Todas las Entidades --</option>
-                </select>
-            </div>
-            <div class="col-md-5">
-                <div class="filter-label">Concepto</div>
-                <select id="filter-concepto" class="form-select">
-                    <option value="ALL">-- Todos los Conceptos --</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button id="btn-reset" class="btn btn-reset w-100 py-2">Limpiar Filtros</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tarjetas de KPIs -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Total Pagado</div>
-                <div class="kpi-value" id="kpi-total">$ 0</div>
-                <div class="kpi-sub" id="kpi-registros">0 registros</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Promedio Mensual</div>
-                <div class="kpi-value" id="kpi-promedio">$ 0</div>
-                <div class="kpi-sub">Promedio del período</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Mes Más Alto</div>
-                <div class="kpi-value" id="kpi-alto">$ 0</div>
-                <div class="kpi-sub" id="kpi-alto-sub">-</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Último Mes vs Anterior</div>
-                <div class="kpi-value" id="kpi-ultimo">$ 0</div>
-                <div class="kpi-sub" id="kpi-ultimo-sub">-</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navegación por Pestañas -->
-    <ul class="nav nav-tabs" id="dashTabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-resumen">Resumen General</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tendencia">Tendencia Detallada</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-composicion">Composición y Pareto</button></li>
-    </ul>
-
-    <!-- Contenido de Pestañas -->
-    <div class="tab-content">
-        <!-- Pestaña 1: Resumen -->
-        <div class="tab-pane fade show active" id="tab-resumen">
-            <div class="row">
-                <div class="col-lg-6"><div id="chart-total" class="chart-card"></div></div>
-                <div class="col-lg-6"><div id="chart-var" class="chart-card"></div></div>
-            </div>
-            <div class="row">
-                <div class="col-12"><div id="chart-acum" class="chart-card"></div></div>
-            </div>
-        </div>
-
-        <!-- Pestaña 2: Tendencia -->
-        <div class="tab-pane fade" id="tab-tendencia">
-            <div class="row">
-                <div class="col-12"><div id="chart-tendencia" class="chart-card" style="height: 600px;"></div></div>
-            </div>
-        </div>
-
-        <!-- Pestaña 3: Composición -->
-        <div class="tab-pane fade" id="tab-composicion">
-            <div class="row">
-                <div class="col-lg-6"><div id="chart-stacked-entidad" class="chart-card"></div></div>
-                <div class="col-lg-6"><div id="chart-pareto" class="chart-card"></div></div>
-            </div>
-            <div class="row">
-                <div class="col-12"><div id="chart-stacked-concepto" class="chart-card"></div></div>
-            </div>
-        </div>
-    </div>
+    <div class="tw"><table>
+      <thead><tr id="head"></tr></thead>
+      <tbody id="body"></tbody>
+      <tfoot><tr><td colspan="7">Total del filtro</td><td class="n" id="foot"></td></tr></tfoot>
+    </table></div>
+    <div class="empty" id="empty" hidden>Ningún registro coincide con estos filtros. Prueba con "Limpiar filtros".</div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-    let RAW_DATA = [];
+const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const PAL = ['#0e7c6b','#d9822b','#3b6fd4','#c23b6b','#7a5bc7','#8a9a1f'];
+const $ = id => document.getElementById(id);
+const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 
-    // Formateador estándar de moneda colombiana con números enteros completos
-    const cop = (val) => "$ " + new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(Math.round(val || 0));
-    const corto = (str, n = 32) => str.length <= n ? str : str.substring(0, n - 1) + "…";
+const cols = [
+  ['nit','NIT'],['ent','Entidad'],['anio','Año'],['mn','Mes_Num'],
+  ['mes','Mes'],['fecha','Fecha'],['conc','Concepto'],['valor','Valor']
+];
 
-    // Carga de archivo CSV local desde data/datos_dinamica.csv
-    Papa.parse("data/datos_dinamica.csv", {
-        download: true,
-        header: true,
-        delimiter: "|",
-        skipEmptyLines: true,
-        complete: function(results) {
-            RAW_DATA = results.data.map(d => ({
-                NIT: d.NIT ? d.NIT.trim() : "",
-                Entidad: d.Entidad ? d.Entidad.trim() : "Sin Entidad",
-                Concepto: d.Concepto ? d.Concepto.trim() : "Sin Concepto",
-                Mes_Num: parseInt(d.Mes_Num) || 0,
-                Mes: d.Mes ? d.Mes.trim() : "",
-                Valor: parseFloat(d.Valor) || 0,
-                Etiqueta: corto(d.Entidad ? d.Entidad.trim() : "")
-            })).filter(d => d.Valor > 0);
+const sel = { conc: $('fC'), ent: $('fE'), nit:$('fN') };
+let sortK = 'mn', sortD = 1, cur = [], rows = [];
 
-            inicializarFiltros();
-            actualizarDashboard();
-        },
-        error: function(err) {
-            document.getElementById('kpi-total').innerText = "Error CSV";
-            console.error("Error al cargar datos:", err);
-        }
+function parseCSV(text) {
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(x => x.trim());
+  if (lines.length < 2) return [];
+  const h = lines[0].split('|').map(s => s.trim());
+  const ix = n => h.indexOf(n);
+  
+  return lines.slice(1).map(l => {
+    const p = l.split('|');
+    const anio = +p[ix('Año')] || 2026;
+    const mn = +p[ix('Mes_Num')] || 1;
+    return {
+      nit: p[ix('NIT')] ? p[ix('NIT')].trim() : '',
+      ent: p[ix('Entidad')] ? p[ix('Entidad')].trim() : '',
+      anio: anio,
+      mn: mn,
+      mes: p[ix('Mes')] ? p[ix('Mes')].trim() : MES[mn-1],
+      fecha: p[ix('Fecha')] ? p[ix('Fecha')].trim() : `${anio}-${String(mn).padStart(2,'0')}-01`,
+      conc: p[ix('Concepto')] ? p[ix('Concepto')].trim() : '',
+      valor: +p[ix('Valor')] || 0
+    };
+  });
+}
+
+function match(r, skip) {
+  return Object.keys(sel).every(k => k === skip || !sel[k].value || r[k] === sel[k].value);
+}
+
+function fillOptions() {
+  for (const k in sel) {
+    const keep = sel[k].value;
+    const vals = [...new Set(rows.filter(r => match(r, k)).map(r => r[k]))].sort();
+    sel[k].innerHTML = '<option value="">Todos</option>' + vals.map(v => `<option value="${v.replace(/"/g, '&quot;')}">${v.replace(/&/g,'&amp;')}</option>`).join('');
+    sel[k].value = vals.includes(keep) ? keep : '';
+  }
+}
+
+function render() {
+  cur = rows.filter(r => match(r)).sort((a, b) => {
+    const x = a[sortK], y = b[sortK];
+    return (x > y ? 1 : x < y ? -1 : (a.nit + a.mn > b.nit + b.mn ? 1 : -1)) * sortD;
+  });
+
+  const tot = cur.reduce((s, r) => s + r.valor, 0);
+  const mesesPresentes = new Set(cur.map(r => r.mn)).size || 1;
+  const prom = tot / mesesPresentes;
+
+  $('kT').textContent = fmt.format(tot);$('kP').textContent = fmt.format(prom);
+  $('kR').textContent = cur.length.toLocaleString('es-CO');$('kE').textContent = new Set(cur.map(r => r.nit)).size;
+  $('foot').textContent = fmt.format(tot);$('empty').hidden = cur.length > 0;
+
+  $('head').innerHTML = cols.map(([k, t]) => 
+    `<th data-k="${k}" class="${k === 'valor' ? 'n' : ''}" ${k === sortK ? `aria-sort="${sortD > 0 ? 'ascending' : 'descending'}"` : ''} tabindex="0">${t}${k === sortK ? (sortD > 0 ? ' ▲' : ' ▼') : ''}</th>`
+  ).join('');
+
+  $('body').innerHTML = cur.map(r => 
+    `<tr><td>${r.nit}</td><td class="e">${r.ent}</td><td>${r.anio}</td><td>${r.mn}</td><td>${r.mes}</td><td>${r.fecha}</td><td><span class="tag">${r.conc}</span></td><td class="n">${fmt.format(r.valor)}</td></tr>`
+  ).join('');
+
+  drawLine();
+
+  const m = {};
+  cur.forEach(r => m[r.mn] = (m[r.mn] || 0) + r.valor);
+  const mx = Math.max(1, ...Object.values(m));
+  
+  $('chart').innerHTML = MES.slice(0, 12).map((n, i) => 
+    m[i + 1] === undefined ? '' : `<div class="col" title="${n}: ${fmt.format(m[i + 1])}"><i style="height:${Math.max(2, m[i + 1] / mx * 100)}%"></i>${n}</div>`
+  ).join('');
+}
+
+function drawLine() {
+  const g = {};
+  cur.forEach(r => {
+    const k = r.ent + '||' + r.conc;
+    (g[k] = g[k] || []).push(r);
+  });
+
+  const ks = Object.keys(g);
+  const ents = [...new Set(cur.map(r => r.ent))], cs = [...new Set(cur.map(r => r.conc))];
+  
+  $('lt').textContent = 'Tendencia de pagos: ' + (ents.length === 1 ? ents[0] : ents.length ? 'Varias entidades (' + ents.length + ')' : 'Sin datos');
+  $('ls').textContent = 'Concepto: ' + (cs.length === 1 ? cs[0] : cs.length ? cs.join(' y ') : '—');
+
+  const W = 800, H = 320, L = 95, R = 20, T = 15, B = 32;
+  const maxVal = Math.max(1, ...cur.map(r => r.valor));
+  const step = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  let top = Math.ceil(maxVal / step) * step;
+
+  const minM = Math.min(1, ...cur.map(r => r.mn));
+  const maxM = Math.max(12, ...cur.map(r => r.mn));
+
+  const xs = m => L + (m - 1) / 11 * (W - L - R);
+  const ys = v => T + (1 - v / top) * (H - T - B);
+
+  let o = '';
+  for (let i = 0; i <= 4; i++) {
+    const v = top * i / 4, y = ys(v);
+    o += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L - 8}" y="${y + 4}" text-anchor="end">${fmt.format(v)}</text>`;
+  }
+
+  for (let m = 1; m <= 12; m++) {
+    o += `<text x="${xs(m)}" y="${H - 8}" text-anchor="middle">${MES[m - 1]}</text>`;
+  }
+
+  let lg = '';
+  ks.forEach((k, i) => {
+    const c = PAL[i % PAL.length];
+    const pts = g[k].sort((a, b) => a.mn - b.mn);
+    const [e, cn] = k.split('||');
+
+    let d = '', pm = -9;
+    pts.forEach(p => {
+      d += (p.mn === pm + 1 ? 'L' : 'M') + xs(p.mn) + ' ' + ys(p.valor);
+      pm = p.mn;
     });
 
-    function inicializarFiltros() {
-        const entidades = [...new Set(RAW_DATA.map(d => d.Entidad))].sort();
-        const conceptos = [...new Set(RAW_DATA.map(d => d.Concepto))].sort();
+    o += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round"/>`;
 
-        const selectEnt = document.getElementById('filter-entidad');
-        const selectConc = document.getElementById('filter-concepto');
+    pts.forEach(p => {
+      o += `<g class="pt">
+        <circle cx="${xs(p.mn)}" cy="${ys(p.valor)}" r="4" fill="${c}">
+          <title>${e} · ${cn} · ${p.mes}: ${fmt.format(p.valor)}</title>
+        </circle>
+        <text x="${xs(p.mn)}" y="${ys(p.valor) - 10}" text-anchor="middle" style="fill:${c};font-weight:600">${fmt.format(p.valor)}</text>
+      </g>`;
+    });
 
-        entidades.forEach(e => {
-            const opt = document.createElement('option');
-            opt.value = e;
-            opt.textContent = e;
-            selectEnt.appendChild(opt);
-        });
+    lg += `<span><i style="background:${c}"></i>${e} · ${cn}</span>`;
+  });
 
-        conceptos.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
-            selectConc.appendChild(opt);
-        });
+  $('line').innerHTML = o;
+  $('line').classList.toggle('many', ks.length > 2);$('lg').innerHTML = lg;
+  $('lnote').textContent = 'Valores completos en pesos ($).' + (ks.length > 2 ? ' Pasa el cursor sobre un punto para enfocar su valor.' : '');
+}
 
-        selectEnt.addEventListener('change', actualizarDashboard);
-        selectConc.addEventListener('change', actualizarDashboard);
+function update() {
+  fillOptions();
+  render();
+}
 
-        document.getElementById('btn-reset').addEventListener('click', () => {
-            selectEnt.value = "ALL";
-            selectConc.value = "ALL";
-            actualizarDashboard();
-        });
+Object.values(sel).forEach(s => s.addEventListener('change', update));
+
+$('clr').onclick = () => {
+  Object.values(sel).forEach(s => s.value = '');
+  update();
+};
+
+$('head').addEventListener('click', e => {
+  const k = e.target.closest('th')?.dataset.k;
+  if (!k) return;
+  sortD = sortK === k ? -sortD : 1;
+  sortK = k;
+  render();
+});
+
+$('head').addEventListener('keydown', e => {
+  if (e.key === 'Enter') e.target.click();
+});
+
+$('up').onclick = () =>$('file').click();
+
+$('file').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const n = parseCSV(rd.result).filter(r => r.nit && !isNaN(r.valor));
+    if (!n.length) {
+      alert('No se pudo leer el archivo. Debe estar separado por | y contener las columnas NIT, Entidad, Año, Mes_Num, Mes, Concepto, Valor.');
+      return;
     }
+    rows = n;
+    Object.values(sel).forEach(s => s.value = '');
+    update();
+  };
+  rd.readAsText(f, 'utf-8');
+};
 
-    function obtenerDatosFiltrados() {
-        const entSeleccionada = document.getElementById('filter-entidad').value;
-        const concSeleccionado = document.getElementById('filter-concepto').value;
-
-        return RAW_DATA.filter(d => {
-            const pasaEnt = entSeleccionada === "ALL" || d.Entidad === entSeleccionada;
-            const pasaConc = concSeleccionado === "ALL" || d.Concepto === concSeleccionado;
-            return pasaEnt && pasaConc;
-        });
-    }
-
-    function actualizarDashboard() {
-        const data = obtenerDatosFiltrados();
-
-        if (data.length === 0) {
-            document.getElementById('kpi-total').innerText = "$ 0";
-            document.getElementById('kpi-promedio').innerText = "$ 0";
-            document.getElementById('kpi-alto').innerText = "$ 0";
-            document.getElementById('kpi-ultimo').innerText = "$ 0";
-            document.getElementById('kpi-registros').innerText = "0 registros";
-            return;
-        }
-
-        // Agrupación mensual
-        const mesesMap = new Map();
-        data.forEach(d => {
-            if (!mesesMap.has(d.Mes_Num)) mesesMap.set(d.Mes_Num, d.Mes);
-        });
-        const mesesOrdenados = [...mesesMap.entries()].sort((a, b) => a[0] - b[0]);
-        const mesesNum = mesesOrdenados.map(m => m[0]);
-        const mesesNom = mesesOrdenados.map(m => m[1]);
-
-        const totalesPorMes = mesesNum.map(mn => {
-            return data.filter(d => d.Mes_Num === mn).reduce((sum, d) => sum + d.Valor, 0);
-        });
-
-        const totalPeriodo = totalesPorMes.reduce((a, b) => a + b, 0);
-        const promedioMensual = totalesPorMes.length > 0 ? totalPeriodo / totalesPorMes.length : 0;
-
-        // Actualizar métricas KPI
-        document.getElementById('kpi-total').innerText = cop(totalPeriodo);
-        document.getElementById('kpi-registros').innerText = `${data.length} registros`;
-        document.getElementById('kpi-promedio').innerText = cop(promedioMensual);
-
-        const valMax = Math.max(...totalesPorMes);
-        const idxMax = totalesPorMes.indexOf(valMax);
-        document.getElementById('kpi-alto').innerText = cop(valMax);
-        document.getElementById('kpi-alto-sub').innerText = idxMax !== -1 ? `Mes: ${mesesNom[idxMax]}` : '-';
-
-        if (totalesPorMes.length >= 2) {
-            const ult = totalesPorMes[totalesPorMes.length - 1];
-            const ant = totalesPorMes[totalesPorMes.length - 2];
-            const pct = ((ult / ant) - 1) * 100;
-            document.getElementById('kpi-ultimo').innerText = cop(ult);
-            document.getElementById('kpi-ultimo-sub').innerHTML = `<span style="color:${pct >= 0 ? '#0f766e' : '#f43f5e'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span> vs ${mesesNom[mesesNom.length - 2]}`;
+// Carga automática del archivo local CSV
+function cargarDefault() {
+  const rutas = ["data/datos_dinamica.csv", "datos_dinamica.csv"];
+  let intentar = idx => {
+    if (idx >= rutas.length) return;
+    fetch(rutas[idx])
+      .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+      .then(t => {
+        const parsed = parseCSV(t).filter(r => r.nit && !isNaN(r.valor));
+        if (parsed.length > 0) {
+          rows = parsed;
+          update();
         } else {
-            document.getElementById('kpi-ultimo').innerText = cop(totalesPorMes[0] || 0);
-            document.getElementById('kpi-ultimo-sub').innerText = 'Mes único';
+          intentar(idx + 1);
         }
+      })
+      .catch(() => intentar(idx + 1));
+  };
+  intentar(0);
+}
 
-        // Configuración de Estilo Global de Plotly
-        const baseLayout = {
-            autosize: true,
-            margin: { t: 50, b: 40, l: 60, r: 30 },
-            font: { family: 'Inter, sans-serif', color: '#0f172a' },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent',
-            xaxis: { gridcolor: '#f1f5f9', zerolinecolor: '#e2e8f0' },
-            yaxis: { gridcolor: '#f1f5f9', zerolinecolor: '#e2e8f0' },
-            hoverlabel: { bgcolor: '#0f172a', font: { color: '#ffffff', family: 'Inter' }, bordercolor: 'transparent' }
-        };
-
-        // 1. Gráfico Total Pagado por Mes (Línea con Valores Completos)
-        Plotly.react('chart-total', [{
-            x: mesesNom,
-            y: totalesPorMes,
-            type: 'scatter',
-            mode: 'lines+markers+text',
-            text: totalesPorMes.map(v => cop(v)),
-            textposition: 'top center',
-            line: { color: '#0f766e', width: 3, shape: 'spline' },
-            marker: { size: 8, color: '#0f766e', bordercolor: '#ffffff', borderwidth: 2 },
-            hovertemplate: '<b>%{x}</b><br>Total: %{text}<extra></extra>'
-        }], {
-            ...baseLayout,
-            title: { text: '<b>Total Pagado por Mes</b>', font: { size: 15, color: '#0f172a' } },
-            shapes: [{
-                type: 'line', x0: mesesNom[0], x1: mesesNom[mesesNom.length - 1],
-                y0: promedioMensual, y1: promedioMensual,
-                line: { color: '#f59e0b', dash: 'dash', width: 2 }
-            }]
-        });
-
-        // 2. Variación % Mensual
-        const varMeses = mesesNom.slice(1);
-        const variaciones = [];
-        const barColors = [];
-        for (let i = 1; i < totalesPorMes.length; i++) {
-            const v = ((totalesPorMes[i] / totalesPorMes[i - 1]) - 1) * 100;
-            variaciones.push(v);
-            barColors.push(v >= 0 ? '#0f766e' : '#f43f5e');
-        }
-        Plotly.react('chart-var', [{
-            x: varMeses,
-            y: variaciones,
-            type: 'bar',
-            text: variaciones.map(v => (v > 0 ? '+' : '') + v.toFixed(1) + '%'),
-            textposition: 'outside',
-            marker: { color: barColors, cornerradius: 4 },
-            hovertemplate: '<b>%{x}</b><br>Variación: %{y:.1f}%<extra></extra>'
-        }], {
-            ...baseLayout,
-            title: { text: '<b>Variación % vs Mes Anterior</b>', font: { size: 15 } },
-            yaxis: { title: '%', gridcolor: '#f1f5f9' }
-        });
-
-        // 3. Pagos Acumulados (Área con Valores Completos)
-        const acumulado = [];
-        totalesPorMes.reduce((a, b, i) => { acumulado[i] = a + b; return a + b; }, 0);
-        Plotly.react('chart-acum', [{
-            x: mesesNom,
-            y: acumulado,
-            fill: 'tozeroy',
-            fillcolor: 'rgba(20, 184, 166, 0.12)',
-            type: 'scatter',
-            mode: 'lines+markers+text',
-            text: acumulado.map(v => cop(v)),
-            textposition: 'top center',
-            line: { color: '#14b8a6', width: 3, shape: 'spline' },
-            marker: { size: 7, color: '#0f766e' },
-            hovertemplate: '<b>%{x}</b><br>Acumulado: %{text}<extra></extra>'
-        }], {
-            ...baseLayout,
-            title: { text: '<b>Pagos Acumulados en el Período</b>', font: { size: 15 } }
-        });
-
-        // 4. Tendencia por Entidad y Concepto (Líneas con Valores Completos)
-        const seriesMap = new Map();
-        data.forEach(d => {
-            const key = `${d.Etiqueta} · ${d.Concepto}`;
-            if (!seriesMap.has(key)) seriesMap.set(key, Array(mesesNum.length).fill(0));
-            const idx = mesesNum.indexOf(d.Mes_Num);
-            if (idx !== -1) seriesMap.get(key)[idx] += d.Valor;
-        });
-
-        const trazosTendencia = [];
-        seriesMap.forEach((valores, serie) => {
-            trazosTendencia.push({
-                x: mesesNom,
-                y: valores,
-                type: 'scatter',
-                mode: 'lines+markers+text',
-                name: serie,
-                text: valores.map(v => v > 0 ? cop(v) : ''),
-                textposition: 'top center',
-                line: { shape: 'spline', width: 2 },
-                marker: { size: 6 },
-                hovertemplate: `<b>${serie}</b><br>%{x}: %{text}<extra></extra>`
-            });
-        });
-
-        Plotly.react('chart-tendencia', trazosTendencia, {
-            ...baseLayout,
-            title: { text: '<b>Tendencia de Pagos por Entidad y Concepto</b>', font: { size: 15 } },
-            legend: { orientation: 'h', y: -0.25 }
-        });
-
-        // 5. Composición por Entidad
-        const entidades = [...new Set(data.map(d => d.Etiqueta))];
-        const trazosEntidad = entidades.map(ent => ({
-            x: mesesNom,
-            y: mesesNum.map(mn => data.filter(d => d.Etiqueta === ent && d.Mes_Num === mn).reduce((s, d) => s + d.Valor, 0)),
-            type: 'bar',
-            name: ent
-        }));
-
-        Plotly.react('chart-stacked-entidad', trazosEntidad, {
-            ...baseLayout,
-            title: { text: '<b>Composición Mensual por Entidad</b>', font: { size: 15 } },
-            barmode: 'stack',
-            legend: { orientation: 'h', y: -0.3 }
-        });
-
-        // 6. Análisis Pareto (Concentración)
-        const totalesEntidad = entidades.map(ent => ({
-            nombre: ent,
-            total: data.filter(d => d.Etiqueta === ent).reduce((s, d) => s + d.Valor, 0)
-        })).sort((a, b) => b.total - a.total);
-
-        const sumTotalPareto = totalesEntidad.reduce((s, d) => s + d.total, 0);
-        let acumPareto = 0;
-        const pctAcum = totalesEntidad.map(d => {
-            acumPareto += (d.total / sumTotalPareto) * 100;
-            return acumPareto;
-        });
-
-        Plotly.react('chart-pareto', [
-            {
-                x: totalesEntidad.map(d => d.nombre),
-                y: totalesEntidad.map(d => d.total),
-                type: 'bar',
-                name: 'Monto',
-                marker: { color: '#0f766e', cornerradius: 4 },
-                text: totalesEntidad.map(d => (d.total / sumTotalPareto * 100).toFixed(1) + '%'),
-                textposition: 'outside'
-            },
-            {
-                x: totalesEntidad.map(d => d.nombre),
-                y: pctAcum,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: '% Acumulado',
-                line: { color: '#f59e0b', width: 2 },
-                yaxis: 'y2'
-            }
-        ], {
-            ...baseLayout,
-            title: { text: '<b>Concentración de Pagos (Pareto)</b>', font: { size: 15 } },
-            yaxis2: { overlaying: 'y', side: 'right', range: [0, 105], ticksuffix: '%', gridcolor: 'transparent' },
-            legend: { orientation: 'h', y: -0.3 }
-        });
-
-        // 7. Cápita vs Evento
-        const conceptos = [...new Set(data.map(d => d.Concepto))];
-        const colorConceptos = { "Cápita": "#f59e0b", "Evento": "#0f766e" };
-        const trazosConcepto = conceptos.map(c => ({
-            x: mesesNom,
-            y: mesesNum.map(mn => data.filter(d => d.Concepto === c && d.Mes_Num === mn).reduce((s, d) => s + d.Valor, 0)),
-            type: 'bar',
-            name: c,
-            marker: { color: colorConceptos[c] || '#6366f1' }
-        }));
-
-        Plotly.react('chart-stacked-concepto', trazosConcepto, {
-            ...baseLayout,
-            title: { text: '<b>Distribución Mensual por Concepto</b>', font: { size: 15 } },
-            barmode: 'stack'
-        });
-    }
-
-    // Ajuste responsivo automático al cambiar de pestaña
-    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
-        tab.addEventListener('shown.bs.tab', () => {
-            window.dispatchEvent(new Event('resize'));
-        });
-    });
+cargarDefault();
 </script>
 </body>
 </html>
