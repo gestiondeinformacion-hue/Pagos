@@ -4,10 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Portal Ejecutivo de Pagos y Auditoría de Salud</title>
+
 <!-- Fuentes Tipográficas -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<!-- PapaParse para lectura e interpretación de CSV con separador | -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<!-- SheetJS (XLSX) para lectura nativa de archivos Excel .xlsx en el navegador -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 :root {
@@ -477,7 +479,7 @@ tfoot td {
       </div>
       <div class="badge-tag">
         <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        Datos Auditados · 2026
+        Datos Excel (.xlsx) · 2026
       </div>
     </div>
   </div>
@@ -575,8 +577,8 @@ tfoot td {
       </div>
       <div style="display:flex;gap:10px;">
         <input type="text" id="tableSearch" placeholder="Buscar en tabla..." style="width:200px;padding:6px 12px;font-size:12px;">
-        <button id="up" class="btn-primary">Cargar Otro CSV</button>
-        <input type="file" id="file" accept=".csv,.txt" hidden>
+        <button id="up" class="btn-primary">Cargar Excel / CSV</button>
+        <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt" hidden>
       </div>
     </div>
 
@@ -624,12 +626,13 @@ function mostrarError(msg) {
   alertBox.style.display = 'block';
 }
 
-function procesarFilasPapa(resultsData) {
-  if (!resultsData || !resultsData.length) return [];
+function procesarFilasExcel(jsonData) {
+  if (!jsonData || !jsonData.length) return [];
   
-  return resultsData.map((d, i) => {
+  return jsonData.map((d, i) => {
     const keys = Object.keys(d);
     
+    // Búsqueda flexible de campos sin importar mayúsculas, tildes o espacios
     const getVal = (candidates) => {
       for (let c of candidates) {
         const foundKey = keys.find(k => k.toLowerCase().replace(/^\uFEFF/, '').trim() === c.toLowerCase());
@@ -643,13 +646,13 @@ function procesarFilasPapa(resultsData) {
     const nit = getVal(['nit']);
     const ent = getVal(['entidad', 'ips', 'prestador']) || 'Entidad';
     const anio = parseInt(getVal(['año', 'anio', 'year'])) || 2026;
-    const mn = parseInt(getVal(['mes_num', 'mesnum', 'num_mes'])) || ((i % 12) + 1);
+    const mn = parseInt(getVal(['mes_num', 'mesnum', 'num_mes', 'mes_numero'])) || ((i % 12) + 1);
     const mes = getVal(['mes']) || MES[mn - 1] || 'Ene';
     const fecha = getVal(['fecha', 'fechagiro']) || `${anio}-${String(mn).padStart(2,'0')}-01`;
     const conc = getVal(['concepto', 'conc']) || 'Evento';
 
     let rawVal = getVal(['valor', 'monto', 'val']);
-    if (rawVal) {
+    if (typeof rawVal === 'string') {
       rawVal = rawVal.replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
     }
     const valor = parseFloat(rawVal) || 0;
@@ -872,60 +875,69 @@ $('head').addEventListener('click', e => {
 
 $('up').onclick = () =>$('file').click();
 
+// Carga manual de archivos Excel o CSV desde el equipo
 $('file').onchange = e => {
   const f = e.target.files[0];
   if (!f) return;
-  Papa.parse(f, {
-    header: true,
-    delimiter: "|",
-    skipEmptyLines: true,
-    transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
-    complete: function(results) {
-      const parsed = procesarFilasPapa(results.data);
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      
+      const parsed = procesarFilasExcel(json);
       if (parsed.length > 0) {
         rows = parsed;
         Object.values(sel).forEach(s => s.value = '');
         $('status-alert').style.display = 'none';
         update();
       } else {
-        mostrarError("No se pudieron extraer filas del archivo subido.");
+        mostrarError("No se encontraron filas con valores numéricos en el archivo cargado.");
       }
+    } catch (err) {
+      mostrarError("Error al procesar el archivo: " + err.message);
     }
-  });
+  };
+  reader.readAsArrayBuffer(f);
 };
 
-function cargarDefault() {
-  const rutaCSV = "data/datos_dinamica.csv";
+// Carga automática del archivo Excel desde data/datos_dinamica.xlsx
+function cargarDefaultExcel() {
+  const rutaExcel = "data/datos_dinamica.xlsx";
 
-  Papa.parse(rutaCSV, {
-    download: true,
-    header: true,
-    delimiter: "|",
-    skipEmptyLines: true,
-    transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
-    complete: function(results) {
-      // Verificar si la respuesta es código HTML en lugar de CSV
-      if (results.data.length > 0 && Object.keys(results.data[0]).some(k => k.includes('<!DOCTYPE') || k.includes('<html'))) {
-        mostrarError("El servidor devolvió la página HTML en lugar del archivo CSV. Si tienes 'vercel.json' en tu repositorio de GitHub, elimínalo para corregir la ruta.");
-        return;
+  fetch(rutaExcel)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`El archivo ${rutaExcel} no fue encontrado (HTTP status ${res.status}).`);
       }
+      return res.arrayBuffer();
+    })
+    .then(buffer => {
+      const data = new Uint8Array(buffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-      const parsed = procesarFilasPapa(results.data);
+      const parsed = procesarFilasExcel(json);
       if (parsed.length > 0) {
         rows = parsed;
         $('status-alert').style.display = 'none';
         update();
       } else {
-        mostrarError("El archivo data/datos_dinamica.csv se descargó pero no se pudieron interpretar sus columnas. Confirma que el archivo tenga la fila de encabezado.");
+        mostrarError("El archivo Excel se descargó pero no se encontraron filas válidas. Revisa los nombres de las columnas.");
       }
-    },
-    error: function(err) {
-      mostrarError("No se pudo descargar el archivo data/datos_dinamica.csv. Si estás abriendo el HTML localmente en tu PC con doble clic, abre la página desde Vercel o desde un servidor local (Live Server).");
-    }
-  });
+    })
+    .catch(err => {
+      mostrarError(`No se pudo leer ${rutaExcel}. Si estás probando localmente con doble clic, usa Vercel o un servidor como Live Server. (${err.message})`);
+    });
 }
 
-cargarDefault();
+cargarDefaultExcel();
 </script>
 </body>
 </html>
