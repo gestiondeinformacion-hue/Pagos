@@ -311,7 +311,7 @@ th {
   top: 0;
 }
 th[aria-sort] { color: var(--primary); }
-td.num, th.num { text-align: right; font-family: "IBM Plex Mono", monospace; font-weight: 500; }
+td.num, th.num { text-align: right; font-family: "IBM Plex Mono", monospace; font-weight: 600; }
 tbody tr:hover { background: var(--primary-light); }
 tfoot td { font-weight: 700; background: var(--panel-sub); border-top: 2px solid var(--border); }
 
@@ -345,7 +345,7 @@ tfoot td { font-weight: 700; background: var(--panel-sub); border-top: 2px solid
     <div class="header-title">
       <div>
         <h1>🏥 Portal Ejecutivo de Análisis y Auditoría</h1>
-        <p class="sub">Análisis consolidado por Entidad Prestadora, Concepto y Variación Mensual · Lectura Automática</p>
+        <p class="sub">Análisis consolidado por Entidad Prestadora, Concepto y Variación Mensual</p>
       </div>
       <div class="badge-tag">
         <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span>
@@ -358,7 +358,7 @@ tfoot td { font-weight: 700; background: var(--panel-sub); border-top: 2px solid
 <div class="wrap" style="margin-top:20px;">
 
   <div id="loading-indicator">
-    <span>⏳ Procesando datos desde el archivo Excel de GitHub/Vercel...</span>
+    <span>⏳ Procesando datos desde el archivo Excel...</span>
   </div>
 
   <div id="status-alert" class="alert-banner"></div>
@@ -424,7 +424,7 @@ tfoot td { font-weight: 700; background: var(--panel-sub); border-top: 2px solid
         <div class="chart-title" id="lt">Tendencia de Pagos por Mes</div>
         <div class="chart-subtitle" id="ls">Comportamiento histórico ajustado al filtro</div>
       </div>
-      <div style="font-size:12px;color:var(--text-mute);font-weight:600">Valores exactos expresados en COP ($)</div>
+      <div style="font-size:12px;color:var(--text-mute);font-weight:600">Valores expresados en COP ($)</div>
     </div>
     <div class="legend-box" id="lg"></div>
     <div style="overflow-x:auto;padding-top:10px;">
@@ -479,11 +479,14 @@ const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','
 const PAL = ['#0e7c6b','#d9822b','#3b6fd4','#c23b6b','#7a5bc7','#14b8a6','#f59e0b'];
 const $ = id => document.getElementById(id);
 
-const fmt = new Intl.NumberFormat('es-CO', { 
-  style: 'currency', 
-  currency: 'COP', 
-  maximumFractionDigits: 0 
-});
+// FUNCIÓN PARA DAR FORMATO CON SEPARADORES DE MILES CON PUNTO (.)
+function formatearMiles(numero) {
+  if (numero === null || numero === undefined || isNaN(numero)) return "$ 0";
+  const numRedondeado = Math.round(numero);
+  const partes = numRedondeado.toString().split('.');
+  partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return "$ " + partes.join(',');
+}
 
 const cols = [
   ['nit','NIT'],['ent','Entidad Prestadora'],['anio','Año'],['mn','Mes Num'],
@@ -529,10 +532,25 @@ function procesarFilasGenerico(rawRows) {
     const fecha = getVal(['fecha']) || '';
     const conc = getVal(['concepto', 'conc']) || 'Evento';
 
-    // LIMPIEZA DE MONEDA (Corrige el error de formato)
+    // PARSEO ROBUSTO DE NÚMEROS DESDE EXCEL
     let rawVal = getVal(['valor', 'monto', 'val', 'total']);
     if (typeof rawVal === 'string') {
-      rawVal = rawVal.replace(/\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
+      rawVal = rawVal.replace(/\$/g, '').replace(/\s/g, '');
+      if (rawVal.includes('.') && rawVal.includes(',')) {
+        rawVal = rawVal.replace(/\./g, '').replace(',', '.');
+      } else if (rawVal.includes('.')) {
+        const parts = rawVal.split('.');
+        if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+          rawVal = rawVal.replace(/\./g, '');
+        }
+      } else if (rawVal.includes(',')) {
+        const parts = rawVal.split(',');
+        if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+          rawVal = rawVal.replace(/,/g, '');
+        } else {
+          rawVal = rawVal.replace(',', '.');
+        }
+      }
     }
     const valor = parseFloat(rawVal) || 0;
 
@@ -581,12 +599,12 @@ function render() {
     }
   });
 
-  $('kT').textContent = fmt.format(tot);
-  $('kP').textContent = fmt.format(prom);$('kPico').textContent = maxMesVal > 0 ? MES[maxMesNum - 1] : '-';
-  $('kPicoSub').textContent = maxMesVal > 0 ? fmt.format(maxMesVal) : 'Sin datos';
+  $('kT').textContent = formatearMiles(tot);
+  $('kP').textContent = formatearMiles(prom);$('kPico').textContent = maxMesVal > 0 ? MES[maxMesNum - 1] : '-';
+  $('kPicoSub').textContent = maxMesVal > 0 ? formatearMiles(maxMesVal) : 'Sin datos';
   $('kE').textContent = new Set(cur.map(r => r.nit)).size;
   $('kR').textContent = `${cur.length.toLocaleString('es-CO')} registros filtrados`;
-  $('foot').textContent = fmt.format(tot);$('empty').hidden = cur.length > 0;
+  $('foot').textContent = formatearMiles(tot);$('empty').hidden = cur.length > 0;
 
   $('head').innerHTML = cols.map(([k, t]) => 
     `<th data-k="${k}" class="${k === 'valor' ? 'num' : ''}" ${k === sortK ? `aria-sort="${sortD > 0 ? 'ascending' : 'descending'}"` : ''} tabindex="0">${t}${k === sortK ? (sortD > 0 ? ' ▲' : ' ▼') : ''}</th>`
@@ -602,7 +620,7 @@ function render() {
       <td>${r.mes}</td>
       <td>${r.fecha}</td>
       <td><span class="tag-concept ${tagClass}">${r.conc}</span></td>
-      <td class="num">${fmt.format(r.valor)}</td>
+      <td class="num">${formatearMiles(r.valor)}</td>
     </tr>`;
   }).join('');
 
@@ -626,7 +644,7 @@ function generarAnalisis(data, total, porMes) {
   if (entOrdenadas.length > 0) {
     const topEnt = entOrdenadas[0];
     const pctTop = total > 0 ? ((topEnt[1] / total) * 100).toFixed(1) : 0;
-    hallazgos.push(`<strong>Concentración Principal:</strong> La entidad <span>${topEnt[0]}</span> representa el <strong>${pctTop}%</strong> del total filtrado (<span>${fmt.format(topEnt[1])}</span>).`);
+    hallazgos.push(`<strong>Concentración Principal:</strong> La entidad <span>${topEnt[0]}</span> representa el <strong>${pctTop}%</strong> del total filtrado (<span>${formatearMiles(topEnt[1])}</span>).`);
   }
 
   const concTotales = {};
@@ -636,7 +654,7 @@ function generarAnalisis(data, total, porMes) {
   if (totalCapita > 0 || totalEvento > 0) {
     const pctCap = total > 0 ? ((totalCapita / total) * 100).toFixed(1) : 0;
     const pctEve = total > 0 ? ((totalEvento / total) * 100).toFixed(1) : 0;
-    hallazgos.push(`<strong>Modalidad de Pago:</strong> Evento representa el <strong>${pctEve}%</strong> (${fmt.format(totalEvento)}), y Cápita abarca el <strong>${pctCap}%</strong> (${fmt.format(totalCapita)}).`);
+    hallazgos.push(`<strong>Modalidad de Pago:</strong> Evento representa el <strong>${pctEve}%</strong> (${formatearMiles(totalEvento)}), y Cápita abarca el <strong>${pctCap}%</strong> (${formatearMiles(totalCapita)}).`);
   }
 
   const valoresMes = Object.values(porMes);
@@ -644,7 +662,7 @@ function generarAnalisis(data, total, porMes) {
     const maxV = Math.max(...valoresMes);
     const minV = Math.min(...valoresMes);
     const difPct = minV > 0 ? (((maxV - minV) / minV) * 100).toFixed(0) : 0;
-    hallazgos.push(`<strong>Variabilidad Mensual:</strong> Brecha del <strong>${difPct}%</strong> entre el mes de mayor costo (${fmt.format(maxV)}) y el de menor costo (${fmt.format(minV)}).`);
+    hallazgos.push(`<strong>Variabilidad Mensual:</strong> Brecha del <strong>${difPct}%</strong> entre el mes de mayor costo (${formatearMiles(maxV)}) y el de menor costo (${formatearMiles(minV)}).`);
   }
 
   const nitsUnicos = new Set(data.map(r => r.nit)).size;
@@ -679,7 +697,7 @@ function drawLineChart() {
   for (let i = 0; i <= 4; i++) {
     const v = top * i / 4, y = ys(v);
     o += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-dasharray="3,3"/>
-          <text x="${L - 10}" y="${y + 4}" text-anchor="end" fill="var(--text-mute)" font-size="10">${fmt.format(v)}</text>`;
+          <text x="${L - 10}" y="${y + 4}" text-anchor="end" fill="var(--text-mute)" font-size="10">${formatearMiles(v)}</text>`;
   }
 
   for (let m = 1; m <= 12; m++) {
@@ -703,9 +721,9 @@ function drawLineChart() {
     pts.forEach(p => {
       o += `<g class="pt">
         <circle cx="${xs(p.mn)}" cy="${ys(p.valor)}" r="5" fill="${color}">
-          <title>${e} · ${cn} · ${p.mes}: ${fmt.format(p.valor)}</title>
+          <title>${e} · ${cn} · ${p.mes}: ${formatearMiles(p.valor)}</title>
         </circle>
-        <text x="${xs(p.mn)}" y="${ys(p.valor) - 12}" text-anchor="middle" fill="${color}">${fmt.format(p.valor)}</text>
+        <text x="${xs(p.mn)}" y="${ys(p.valor) - 12}" text-anchor="middle" fill="${color}">${formatearMiles(p.valor)}</text>
       </g>`;
     });
 
@@ -722,8 +740,8 @@ function drawBarChart(porMes) {
     const val = porMes[i + 1] || 0;
     const h = (val / maxV) * 100;
     return `
-      <div class="bar-col" title="${m}: ${fmt.format(val)}">
-        <div class="bar-val">${val > 0 ? fmt.format(val) : ''}</div>
+      <div class="bar-col" title="${m}: ${formatearMiles(val)}">
+        <div class="bar-val">${val > 0 ? formatearMiles(val) : ''}</div>
         <div class="bar-fill" style="height:${Math.max(4, h)}%"></div>
         <div style="margin-top:6px;font-weight:600">${m}</div>
       </div>
@@ -755,7 +773,6 @@ $('head').addEventListener('click', e => {
 
 $('up').onclick = () =>$('file').click();
 
-// Carga manual de archivos Excel desde la computadora (Opción de respaldo)
 $('file').onchange = e => {
   const f = e.target.files[0];
   if (!f) return;
@@ -785,7 +802,6 @@ $('file').onchange = e => {
   reader.readAsArrayBuffer(f);
 };
 
-// Carga automática al iniciar la página buscando en la ruta de Github/Vercel
 async function cargarDatosExcel() {
   const EXCEL_URL = "data/datos_dinamica.xlsx?t=" + new Date().getTime();
   const loading = $('loading-indicator');
@@ -797,14 +813,12 @@ async function cargarDatosExcel() {
     const arrayBuffer = await response.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: "array", cellDates: true });
     
-    // Busca la pestaña exacta o toma la primera
     let sheetName = 'datos_dinamica';
     if (!workbook.SheetNames.includes(sheetName)) {
         sheetName = workbook.SheetNames[0]; 
     }
     const sheet = workbook.Sheets[sheetName];
 
-    // Detección dinámica de la fila del encabezado
     const sheetMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
     let headerRowIndex = 0;
     for (let i = 0; i < sheetMatrix.length; i++) {
