@@ -101,6 +101,17 @@ h1 {
   gap: 6px;
 }
 
+.alert-banner {
+  background: #ffe4e6;
+  border: 1px solid #f43f5e;
+  color: #9f1239;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: none;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -474,6 +485,9 @@ tfoot td {
 
 <div class="wrap" style="margin-top:20px;">
 
+  <!-- Alerta de Diagnóstico -->
+  <div id="status-alert" class="alert-banner"></div>
+
   <!-- Filtros Principales -->
   <div class="panel">
     <div class="filters-grid">
@@ -604,13 +618,18 @@ const cols = [
 const sel = { conc: $('fC'), ent: $('fE'), nit:$('fN') };
 let sortK = 'mn', sortD = 1, cur = [], rows = [];
 
+function mostrarError(msg) {
+  const alertBox = $('status-alert');
+  alertBox.innerHTML = '⚠️ ' + msg;
+  alertBox.style.display = 'block';
+}
+
 function procesarFilasPapa(resultsData) {
   if (!resultsData || !resultsData.length) return [];
   
   return resultsData.map((d, i) => {
     const keys = Object.keys(d);
     
-    // Función auxiliar para buscar claves sin importar espacios, mayúsculas o caracteres invisibles BOM
     const getVal = (candidates) => {
       for (let c of candidates) {
         const foundKey = keys.find(k => k.toLowerCase().replace(/^\uFEFF/, '').trim() === c.toLowerCase());
@@ -866,9 +885,10 @@ $('file').onchange = e => {
       if (parsed.length > 0) {
         rows = parsed;
         Object.values(sel).forEach(s => s.value = '');
+        $('status-alert').style.display = 'none';
         update();
       } else {
-        alert("No se pudieron leer registros del archivo subido. Revisa la estructura.");
+        mostrarError("No se pudieron extraer filas del archivo subido.");
       }
     }
   });
@@ -884,16 +904,23 @@ function cargarDefault() {
     skipEmptyLines: true,
     transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
     complete: function(results) {
+      // Verificar si la respuesta es código HTML en lugar de CSV
+      if (results.data.length > 0 && Object.keys(results.data[0]).some(k => k.includes('<!DOCTYPE') || k.includes('<html'))) {
+        mostrarError("El servidor devolvió la página HTML en lugar del archivo CSV. Si tienes 'vercel.json' en tu repositorio de GitHub, elimínalo para corregir la ruta.");
+        return;
+      }
+
       const parsed = procesarFilasPapa(results.data);
       if (parsed.length > 0) {
         rows = parsed;
+        $('status-alert').style.display = 'none';
         update();
       } else {
-        console.error("No se encontraron registros en data/datos_dinamica.csv");
+        mostrarError("El archivo data/datos_dinamica.csv se descargó pero no se pudieron interpretar sus columnas. Confirma que el archivo tenga la fila de encabezado.");
       }
     },
     error: function(err) {
-      console.error("Error al cargar data/datos_dinamica.csv:", err);
+      mostrarError("No se pudo descargar el archivo data/datos_dinamica.csv. Si estás abriendo el HTML localmente en tu PC con doble clic, abre la página desde Vercel o desde un servidor local (Live Server).");
     }
   });
 }
