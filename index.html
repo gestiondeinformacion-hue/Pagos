@@ -6,7 +6,7 @@
 <title>Portal Ejecutivo de Pagos y Auditoría de Salud</title>
 <!-- Fuentes Tipográficas -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<!-- PapaParse para lectura perfecta de CSV con separador | -->
+<!-- PapaParse para lectura e interpretación de CSV con separador | -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
@@ -608,17 +608,29 @@ function procesarFilasPapa(resultsData) {
   if (!resultsData || !resultsData.length) return [];
   
   return resultsData.map((d, i) => {
-    // Mapeo flexible independientemente de mayúsculas o variaciones de nombres
-    const nit = d.NIT || d.nit || d.Nit || '';
-    const ent = d.Entidad || d.entidad || d.ENTIDAD || d.IPS || 'Entidad';
-    const anio = parseInt(d.Año || d.Anio || d.anio || d.AÑO || 2026) || 2026;
-    const mn = parseInt(d.Mes_Num || d.mes_num || d.MesNum || d.MES_NUM || (i % 12) + 1) || 1;
-    const mes = d.Mes || d.mes || d.MES || MES[mn - 1] || 'Ene';
-    const fecha = d.Fecha || d.fecha || d.FECHA || `${anio}-${String(mn).padStart(2,'0')}-01`;
-    const conc = d.Concepto || d.concepto || d.CONCEPTO || 'Evento';
+    const keys = Object.keys(d);
+    
+    // Función auxiliar para buscar claves sin importar espacios, mayúsculas o caracteres invisibles BOM
+    const getVal = (candidates) => {
+      for (let c of candidates) {
+        const foundKey = keys.find(k => k.toLowerCase().replace(/^\uFEFF/, '').trim() === c.toLowerCase());
+        if (foundKey && d[foundKey] !== undefined && d[foundKey] !== null) {
+          return String(d[foundKey]).trim();
+        }
+      }
+      return '';
+    };
 
-    let rawVal = d.Valor !== undefined ? d.Valor : (d.valor !== undefined ? d.valor : '0');
-    if (typeof rawVal === 'string') {
+    const nit = getVal(['nit']);
+    const ent = getVal(['entidad', 'ips', 'prestador']) || 'Entidad';
+    const anio = parseInt(getVal(['año', 'anio', 'year'])) || 2026;
+    const mn = parseInt(getVal(['mes_num', 'mesnum', 'num_mes'])) || ((i % 12) + 1);
+    const mes = getVal(['mes']) || MES[mn - 1] || 'Ene';
+    const fecha = getVal(['fecha', 'fechagiro']) || `${anio}-${String(mn).padStart(2,'0')}-01`;
+    const conc = getVal(['concepto', 'conc']) || 'Evento';
+
+    let rawVal = getVal(['valor', 'monto', 'val']);
+    if (rawVal) {
       rawVal = rawVal.replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
     }
     const valor = parseFloat(rawVal) || 0;
@@ -848,6 +860,7 @@ $('file').onchange = e => {
     header: true,
     delimiter: "|",
     skipEmptyLines: true,
+    transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
     complete: function(results) {
       const parsed = procesarFilasPapa(results.data);
       if (parsed.length > 0) {
@@ -862,7 +875,6 @@ $('file').onchange = e => {
 };
 
 function cargarDefault() {
-  // Ruta exacta dentro de la carpeta data según la estructura de GitHub
   const rutaCSV = "data/datos_dinamica.csv";
 
   Papa.parse(rutaCSV, {
@@ -870,17 +882,18 @@ function cargarDefault() {
     header: true,
     delimiter: "|",
     skipEmptyLines: true,
+    transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
     complete: function(results) {
       const parsed = procesarFilasPapa(results.data);
       if (parsed.length > 0) {
         rows = parsed;
         update();
       } else {
-        console.error("El archivo se leyó pero no devolvió filas válidas.");
+        console.error("No se encontraron registros en data/datos_dinamica.csv");
       }
     },
     error: function(err) {
-      console.error("Error cargando CSV desde data/datos_dinamica.csv:", err);
+      console.error("Error al cargar data/datos_dinamica.csv:", err);
     }
   });
 }
