@@ -1,31 +1,252 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Análisis de pagos 2026</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.59.0/build/stlite.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de pagos 2026</title>
+    <!-- Bootstrap para los estilos y pestañas -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly.js para los gráficos -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <!-- PapaParse para leer el CSV fácilmente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; }
+        .kpi-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; }
+        .kpi-title { font-size: 0.9rem; color: #6c757d; font-weight: bold; text-transform: uppercase;}
+        .kpi-value { font-size: 1.5rem; font-weight: bold; color: #0e7c6b; }
+        .kpi-sub { font-size: 0.85rem; color: #d9822b; }
+        .chart-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; height: 500px;}
+        .nav-tabs { margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.59.0/build/stlite.js"></script>
-  <script>
-    stlite.mount(
-      {
-        requirements: ["pandas", "plotly"],
-        entrypoint: "app.py",
-        files: {
-          "app.py": {
-            url: "app.py",
-          },
-          "data/datos_dinamica.csv": {
-            url: "data/datos_dinamica.csv",
-          }
+
+<div class="container-fluid">
+    <h2 class="mb-1">📊 ¿Cómo nos fue en los pagos?</h2>
+    <p class="text-muted mb-4">Análisis por entidad, concepto y mes · 2026</p>
+
+    <!-- KPIs -->
+    <div class="row mb-4" id="kpis">
+        <div class="col-md-3"><div class="kpi-card"><div class="kpi-title">Total del período</div><div class="kpi-value" id="kpi-total">Cargando...</div></div></div>
+        <div class="col-md-3"><div class="kpi-card"><div class="kpi-title">Promedio mensual</div><div class="kpi-value" id="kpi-promedio">...</div></div></div>
+        <div class="col-md-3"><div class="kpi-card"><div class="kpi-title">Mes más alto</div><div class="kpi-value" id="kpi-alto">...</div><div class="kpi-sub" id="kpi-alto-sub"></div></div></div>
+        <div class="col-md-3"><div class="kpi-card"><div class="kpi-title">Último mes vs anterior</div><div class="kpi-value" id="kpi-ultimo">...</div><div class="kpi-sub" id="kpi-ultimo-sub"></div></div></div>
+    </div>
+
+    <!-- Pestañas -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#resumen" type="button">Resumen</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tendencia" type="button">Tendencia</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#composicion" type="button">Composición</button></li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <!-- Pestaña 1: Resumen -->
+        <div class="tab-pane fade show active" id="resumen">
+            <div class="row">
+                <div class="col-md-6"><div id="chart-total" class="chart-container"></div></div>
+                <div class="col-md-6"><div id="chart-var" class="chart-container"></div></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><div id="chart-acum" class="chart-container"></div></div>
+            </div>
+        </div>
+        <!-- Pestaña 2: Tendencia -->
+        <div class="tab-pane fade" id="tendencia">
+            <div class="row">
+                <div class="col-md-12"><div id="chart-tendencia" class="chart-container" style="height: 600px;"></div></div>
+            </div>
+        </div>
+        <!-- Pestaña 3: Composición -->
+        <div class="tab-pane fade" id="composicion">
+            <div class="row">
+                <div class="col-md-6"><div id="chart-stacked-entidad" class="chart-container"></div></div>
+                <div class="col-md-6"><div id="chart-pareto" class="chart-container"></div></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><div id="chart-stacked-concepto" class="chart-container"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Formateador de Pesos Colombianos con valores completos
+    const cop = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
+
+    // Acortar nombres largos
+    const corto = (nombre, n=32) => nombre.length <= n ? nombre : nombre.substring(0, n-1) + "…";
+
+    // Cargar datos
+    Papa.parse("data/datos_dinamica.csv", {
+        download: true,
+        header: true,
+        delimiter: "|",
+        skipEmptyLines: true,
+        complete: function(results) {
+            let data = results.data.map(d => ({
+                ...d,
+                Valor: parseFloat(d.Valor) || 0,
+                Mes_Num: parseInt(d.Mes_Num) || 0,
+                Etiqueta: corto(d.Entidad ? d.Entidad.trim() : "")
+            })).filter(d => d.Valor > 0);
+
+            procesarDashboards(data);
+        },
+        error: function(err) {
+            document.getElementById('kpi-total').innerHTML = "<span class='text-danger'>Error al cargar CSV. Verifica la ruta.</span>";
         }
-      },
-      document.getElementById("root")
-    );
-  </script>
+    });
+
+    function procesarDashboards(data) {
+        // --- Agrupaciones base ---
+        let mesesUnicos = [...new Map(data.map(item => [item.Mes_Num, item.Mes])).entries()].sort((a, b) => a[0] - b[0]);
+        let mesesNum = mesesUnicos.map(m => m[0]);
+        let mesesNom = mesesUnicos.map(m => m[1]);
+
+        let totalesPorMes = mesesNum.map(mn => {
+            return data.filter(d => d.Mes_Num === mn).reduce((sum, d) => sum + d.Valor, 0);
+        });
+
+        let totalPeriodo = totalesPorMes.reduce((a, b) => a + b, 0);
+        let promedioMensual = totalPeriodo / totalesPorMes.length;
+
+        // --- KPIs ---
+        document.getElementById('kpi-total').innerText = cop(totalPeriodo);
+        document.getElementById('kpi-promedio').innerText = cop(promedioMensual);
+        
+        let valMax = Math.max(...totalesPorMes);
+        let idxMax = totalesPorMes.indexOf(valMax);
+        document.getElementById('kpi-alto').innerText = cop(valMax);
+        document.getElementById('kpi-alto-sub').innerText = `En ${mesesNom[idxMax]}`;
+
+        if(totalesPorMes.length >= 2) {
+            let ult = totalesPorMes[totalesPorMes.length-1];
+            let ant = totalesPorMes[totalesPorMes.length-2];
+            let pct = ((ult / ant) - 1) * 100;
+            document.getElementById('kpi-ultimo').innerText = cop(ult);
+            document.getElementById('kpi-ultimo-sub').innerHTML = `<span style="color: ${pct >= 0 ? '#0e7c6b' : '#c23b6b'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span> vs ${mesesNom[mesesNom.length-2]}`;
+        }
+
+        let layoutBase = { margin: { t: 50, b: 40, l: 50, r: 20 }, font: {family: 'system-ui, -apple-system, sans-serif'} };
+
+        // --- Gráfico 1: Total pagado por mes ---
+        Plotly.newPlot('chart-total', [{
+            x: mesesNom,
+            y: totalesPorMes,
+            type: 'scatter',
+            mode: 'lines+markers+text',
+            text: totalesPorMes.map(v => cop(v)),
+            textposition: 'top center',
+            line: {color: '#0e7c6b', width: 3},
+            name: 'Total'
+        }], {
+            ...layoutBase, title: 'Total pagado por mes',
+            shapes: [{ type: 'line', x0: mesesNom[0], x1: mesesNom[mesesNom.length-1], y0: promedioMensual, y1: promedioMensual, line: {color: '#d9822b', dash: 'dash'} }]
+        });
+
+        // --- Gráfico 2: Variación % contra mes anterior ---
+        let varMeses = mesesNom.slice(1);
+        let variaciones = [];
+        let varColors = [];
+        for(let i=1; i<totalesPorMes.length; i++) {
+            let val = ((totalesPorMes[i] / totalesPorMes[i-1]) - 1) * 100;
+            variaciones.push(val);
+            varColors.push(val >= 0 ? '#0e7c6b' : '#c23b6b');
+        }
+        Plotly.newPlot('chart-var', [{
+            x: varMeses,
+            y: variaciones,
+            type: 'bar',
+            text: variaciones.map(v => (v > 0 ? '+' : '') + v.toFixed(1) + '%'),
+            textposition: 'outside',
+            marker: {color: varColors}
+        }], { ...layoutBase, title: 'Variación % del total vs mes anterior', yaxis: {title: '%'} });
+
+        // --- Gráfico 3: Área Acumulada ---
+        let acumulado = [];
+        totalesPorMes.reduce((a, b, i) => { acumulado[i] = a + b; return a + b; }, 0);
+        Plotly.newPlot('chart-acum', [{
+            x: mesesNom,
+            y: acumulado,
+            fill: 'tozeroy',
+            type: 'scatter',
+            mode: 'lines+markers+text',
+            text: acumulado.map(v => cop(v)),
+            textposition: 'top center',
+            line: {color: '#3b6fd4'}
+        }], { ...layoutBase, title: 'Pagos acumulados en el año' });
+
+        // --- Gráfico 4: Tendencia (Entidad · Concepto) ---
+        let paresUnicos = [...new Set(data.map(d => d.Etiqueta + " · " + d.Concepto))];
+        let trazosTendencia = paresUnicos.map(par => {
+            let [ent, conc] = par.split(" · ");
+            let yVals = mesesNum.map(mn => {
+                return data.filter(d => d.Etiqueta === ent && d.Concepto === conc && d.Mes_Num === mn)
+                           .reduce((sum, d) => sum + d.Valor, 0);
+            });
+            // Mostrar texto de forma condicional para no saturar si hay muchas líneas, pero según requerimiento: con valores completos
+            return {
+                x: mesesNom, y: yVals, type: 'scatter', mode: 'lines+markers+text',
+                name: par, text: yVals.map(v => v > 0 ? cop(v) : ''), textposition: 'top center'
+            };
+        });
+        Plotly.newPlot('chart-tendencia', trazosTendencia, {
+            ...layoutBase, title: 'Tendencia de pagos por entidad y concepto', yaxis: {type: 'log'}, legend: {orientation: 'h', y: -0.2}
+        });
+
+        // --- Gráfico 5: Apilado por Entidad ---
+        let entidades = [...new Set(data.map(d => d.Etiqueta))];
+        let trazosEntidad = entidades.map(ent => ({
+            x: mesesNom,
+            y: mesesNum.map(mn => data.filter(d => d.Etiqueta === ent && d.Mes_Num === mn).reduce((sum, d) => sum + d.Valor, 0)),
+            type: 'bar',
+            name: ent
+        }));
+        Plotly.newPlot('chart-stacked-entidad', trazosEntidad, { ...layoutBase, title: 'Pagos por mes (apilados por entidad)', barmode: 'stack', legend: {orientation: 'h', y: -0.3} });
+
+        // --- Gráfico 6: Pareto (Concentración) ---
+        let totalesPorEntidad = entidades.map(ent => {
+            return {
+                nombre: ent, 
+                total: data.filter(d => d.Etiqueta === ent).reduce((sum, d) => sum + d.Valor, 0)
+            };
+        }).sort((a, b) => b.total - a.total);
+        
+        let sumPareto = totalesPorEntidad.reduce((sum, d) => sum + d.total, 0);
+        let pctAcumulado = [];
+        totalesPorEntidad.reduce((a, b, i) => { 
+            let val = a + (b.total / sumPareto * 100); 
+            pctAcumulado.push(val); return val; 
+        }, 0);
+
+        Plotly.newPlot('chart-pareto', [
+            { x: totalesPorEntidad.map(d=>d.nombre), y: totalesPorEntidad.map(d=>d.total), type: 'bar', name: 'Valor', marker: {color: '#0e7c6b'}, text: totalesPorEntidad.map(d => (d.total/sumPareto*100).toFixed(1)+'%'), textposition: 'outside' },
+            { x: totalesPorEntidad.map(d=>d.nombre), y: pctAcumulado, type: 'scatter', mode: 'lines+markers', name: '% Acumulado', line: {color: '#d9822b'}, yaxis: 'y2' }
+        ], { ...layoutBase, title: 'Concentración (Pareto)', yaxis2: {overlaying: 'y', side: 'right', range: [0, 105], ticksuffix: '%'}, legend: {orientation: 'h', y: -0.3} });
+
+        // --- Gráfico 7: Cápita vs Evento ---
+        let conceptos = [...new Set(data.map(d => d.Concepto))];
+        let colorMap = {"Cápita": "#d9822b", "Evento": "#0e7c6b"};
+        let trazosConcepto = conceptos.map(conc => ({
+            x: mesesNom,
+            y: mesesNum.map(mn => data.filter(d => d.Concepto === conc && d.Mes_Num === mn).reduce((sum, d) => sum + d.Valor, 0)),
+            type: 'bar',
+            name: conc,
+            marker: { color: colorMap[conc] || '#7a5bc7' }
+        }));
+        Plotly.newPlot('chart-stacked-concepto', trazosConcepto, { ...layoutBase, title: 'Distribución por Concepto (Mes a Mes)', barmode: 'stack' });
+    }
+
+    // Redimensionar gráficos al cambiar de pestaña
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', () => {
+            window.dispatchEvent(new Event('resize'));
+        });
+    });
+</script>
 </body>
 </html>
