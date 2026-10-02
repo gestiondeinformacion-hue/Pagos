@@ -246,17 +246,17 @@ button.btn-sec:hover { background: var(--border); }
 #line-svg .pt text {
   paint-order: stroke fill;
   stroke: var(--panel);
-  stroke-width: 3px;
+  stroke-width: 2.5px;
   stroke-linejoin: round;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
+  font-size: 8px; /* TAMAÑO DE LETRA REDUCIDO PARA MOSTRAR VALORES COMPLETOS */
   font-weight: 700;
 }
 
 #line-svg.many .pt text { opacity: 0; pointer-events: none; }
 #line-svg.many .pt:hover text { opacity: 1; }
 #line-svg .pt circle { cursor: pointer; transition: r 0.2s ease; }
-#line-svg .pt:hover circle { r: 7; }
+#line-svg .pt:hover circle { r: 6; }
 
 .legend-box { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 14px; font-size: 12px; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 500; }
@@ -266,8 +266,8 @@ button.btn-sec:hover { background: var(--border); }
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  height: 180px;
-  padding-top: 20px;
+  height: 200px;
+  padding-top: 25px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -293,7 +293,7 @@ button.btn-sec:hover { background: var(--border); }
 }
 .bar-fill:hover { background: var(--primary-hover); }
 
-.bar-val { font-size: 10px; font-weight: 600; margin-bottom: 4px; color: var(--text-main); text-align: center; }
+.bar-val { font-size: 8px; font-weight: 600; margin-bottom: 4px; color: var(--text-main); text-align: center; }
 
 .table-wrap { overflow-x: auto; margin-top: 12px; }
 table { border-collapse: collapse; width: 100%; min-width: 800px; font-size: 13px; }
@@ -417,18 +417,18 @@ tfoot td { font-weight: 700; background: var(--panel-sub); border-top: 2px solid
     <ul class="analysis-list" id="analysis-container"></ul>
   </div>
 
-  <!-- Gráfico de Tendencia SVG -->
+  <!-- Gráfico de Tendencia SVG con Valores Completos -->
   <div class="panel">
     <div class="chart-header">
       <div>
         <div class="chart-title" id="lt">Tendencia de Pagos por Mes</div>
         <div class="chart-subtitle" id="ls">Comportamiento histórico ajustado al filtro</div>
       </div>
-      <div style="font-size:12px;color:var(--text-mute);font-weight:600">Valores expresados en COP ($) · Pasa el cursor para ver cifra exacta</div>
+      <div style="font-size:12px;color:var(--text-mute);font-weight:600">Valores expresados completos en COP ($)</div>
     </div>
     <div class="legend-box" id="lg"></div>
     <div style="overflow-x:auto;padding-top:10px;">
-      <svg id="line-svg" viewBox="0 0 900 350" role="img"></svg>
+      <svg id="line-svg" viewBox="0 0 950 380" role="img"></svg>
     </div>
   </div>
 
@@ -479,29 +479,13 @@ const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','
 const PAL = ['#0e7c6b','#d9822b','#3b6fd4','#c23b6b','#7a5bc7','#14b8a6','#f59e0b'];
 const $ = id => document.getElementById(id);
 
-// FORMATO COMPLETO PARA TABLAS, KPIS Y TOOLTIPS
+// FORMATO COMPLETO Y EXACTO CON PUNTOS DE MILES
 function formatearMiles(numero) {
   if (numero === null || numero === undefined || isNaN(numero)) return "$ 0";
   const numRedondeado = Math.round(numero);
   const partes = numRedondeado.toString().split('.');
   partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return "$ " + partes.join(',');
-}
-
-// FORMATO CORTO Y COMPACTO PARA GRÁFICOS (EVITA AMONTONAMIENTO)
-function formatearCorto(v) {
-  if (!v || isNaN(v)) return "$ 0";
-  const abs = Math.abs(v);
-  if (abs >= 1e9) {
-    return "$ " + (v / 1e6).toLocaleString('es-CO', {maximumFractionDigits: 0}) + " M";
-  }
-  if (abs >= 1e6) {
-    return "$ " + (v / 1e6).toLocaleString('es-CO', {maximumFractionDigits: 1}) + " M";
-  }
-  if (abs >= 1e3) {
-    return "$ " + (v / 1e3).toLocaleString('es-CO', {maximumFractionDigits: 0}) + " K";
-  }
-  return "$ " + Math.round(v);
 }
 
 const cols = [
@@ -700,7 +684,8 @@ function drawLineChart() {
   $('lt').textContent = ents.length === 1 ? `Tendencia: ${ents[0]}` : `Tendencia Consolidada (${ents.length} Entidades)`;
   $('ls').textContent = `Concepto: ${cs.length ? cs.join(', ') : 'Todos'}`;
 
-  const W = 900, H = 350, L = 100, R = 30, T = 35, B = 45;
+  // L = 130 para dar espacio a los valores completos del Eje Y
+  const W = 950, H = 380, L = 130, R = 30, T = 40, B = 45;
   const maxVal = Math.max(1, ...cur.map(r => r.valor));
   const step = Math.pow(10, Math.floor(Math.log10(maxVal)));
   let top = Math.ceil(maxVal / step) * step;
@@ -709,14 +694,14 @@ function drawLineChart() {
   const ys = v => T + (1 - v / top) * (H - T - B);
 
   let o = '';
-  // Líneas de guía y marcas del Eje Y
+  // Eje Y con valores enteros completos
   for (let i = 0; i <= 4; i++) {
     const v = top * i / 4, y = ys(v);
     o += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-dasharray="3,3"/>
-          <text x="${L - 12}" y="${y + 4}" text-anchor="end" fill="var(--text-mute)" font-size="11" font-weight="500">${formatearCorto(v)}</text>`;
+          <text x="${L - 12}" y="${y + 4}" text-anchor="end" fill="var(--text-mute)" font-size="10" font-weight="600">${formatearMiles(v)}</text>`;
   }
 
-  // Meses en Eje X
+  // Eje X (Meses)
   for (let m = 1; m <= 12; m++) {
     o += `<text x="${xs(m)}" y="${H - 12}" text-anchor="middle" fill="var(--text-mute)" font-weight="600" font-size="11">${MES[m - 1]}</text>`;
   }
@@ -739,21 +724,22 @@ function drawLineChart() {
       const cx = xs(p.mn);
       const cy = ys(p.valor);
       
-      // Control inteligente de altura para evitar solapamientos entre series
-      let yOffset = -12;
+      // ESCALONAMIENTO INTELIGENTE PARA VALORES COMPLETOS
+      let yOffset = -10;
       if (ks.length > 1 && sIdx % 2 === 1) {
-        yOffset = 22; // Serie 2 va por debajo de los nodos
+        // Segunda línea (debajo de los nodos)
+        yOffset = (pIdx % 2 === 0) ? 18 : 28;
       } else {
-        yOffset = (pIdx % 2 === 0) ? -12 : -22; // Alternado arriba para Serie 1
+        // Primera línea (arriba de los nodos, alternando altura)
+        yOffset = (pIdx % 2 === 0) ? -10 : -22;
       }
 
       o += `<g class="pt">
-        <circle cx="${cx}" cy="${cy}" r="5" fill="${color}">
+        <circle cx="${cx}" cy="${cy}" r="4.5" fill="${color}">
           <title>${e} · ${cn} · ${p.mes}: ${formatearMiles(p.valor)}</title>
         </circle>
         <text x="${cx}" y="${cy + yOffset}" text-anchor="middle" fill="${color}">
-          ${formatearCorto(p.valor)}
-          <title>${e} · ${cn} · ${p.mes}: ${formatearMiles(p.valor)}</title>
+          ${formatearMiles(p.valor)}
         </text>
       </g>`;
     });
@@ -772,7 +758,7 @@ function drawBarChart(porMes) {
     const h = (val / maxV) * 100;
     return `
       <div class="bar-col" title="${m}: ${formatearMiles(val)}">
-        <div class="bar-val">${val > 0 ? formatearCorto(val) : ''}</div>
+        <div class="bar-val">${val > 0 ? formatearMiles(val) : ''}</div>
         <div class="bar-fill" style="height:${Math.max(4, h)}%"></div>
         <div style="margin-top:6px;font-weight:600">${m}</div>
       </div>
