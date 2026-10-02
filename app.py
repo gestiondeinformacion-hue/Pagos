@@ -102,10 +102,10 @@ valle = tm.loc[tm["Valor"].idxmin()]
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Total del período", cop(total))
 c2.metric("Promedio mensual", cop(promedio))
-c3.metric("Mes más alto", f"{pico['Mes']} · {mm(pico['Valor'])}")
+c3.metric("Mes más alto", f"{pico['Mes']} · {cop(pico['Valor'])}")
 if len(tm) >= 2:
     ult, ant = tm.iloc[-1], tm.iloc[-2]
-    c4.metric(f"Último mes ({ult['Mes']}) vs anterior", mm(ult["Valor"]), f"{(ult['Valor'] / ant['Valor'] - 1) * 100:+.1f}%")
+    c4.metric(f"Último mes ({ult['Mes']}) vs anterior", cop(ult["Valor"]), f"{(ult['Valor'] / ant['Valor'] - 1) * 100:+.1f}%")
 else:
     c4.metric("Meses analizados", len(tm))
 
@@ -115,11 +115,12 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["Resumen", "Tendencia", "Composición", 
 with tab1:
     a, b = st.columns(2)
     with a:
+        # Gráfica de línea: Total pagado por mes con valores completos cop()
         f = go.Figure(go.Scatter(x=tm["Mes"], y=tm["Valor"], mode="lines+markers+text",
-                                 text=[mm(v) for v in tm["Valor"]], textposition="top center",
+                                 text=[cop(v) for v in tm["Valor"]], textposition="top center",
                                  line=dict(width=3, color="#0e7c6b"), name="Total"))
         f.add_hline(y=promedio, line_dash="dash", line_color="#d9822b",
-                    annotation_text=f"Promedio {mm(promedio)}", annotation_position="bottom right")
+                    annotation_text=f"Promedio {cop(promedio)}", annotation_position="bottom right")
         f.update_layout(title="Total pagado por mes", yaxis_title="Pesos", xaxis=dict(categoryorder="array", categoryarray=orden_meses),
                         margin=dict(t=50, b=10))
         st.plotly_chart(f)
@@ -137,8 +138,10 @@ with tab1:
             st.plotly_chart(f)
 
     tm["Acumulado"] = tm["Valor"].cumsum()
+    # Gráfica acumulada con valores completos cop()
     f = px.area(tm, x="Mes", y="Acumulado", title="Pagos acumulados en el año", markers=True,
                 category_orders={"Mes": orden_meses}, color_discrete_sequence=["#3b6fd4"])
+    f.update_traces(mode="lines+markers+text", text=[cop(v) for v in tm["Acumulado"]], textposition="top center")
     f.update_layout(margin=dict(t=50, b=10))
     st.plotly_chart(f)
 
@@ -146,8 +149,13 @@ with tab1:
 with tab2:
     s = d.groupby(["Etiqueta", "Concepto", "Mes_Num", "Mes"], as_index=False)["Valor"].sum().sort_values("Mes_Num")
     s["Serie"] = s["Etiqueta"] + " · " + s["Concepto"]
-    f = px.line(s, x="Mes", y="Valor", color="Serie", markers=True, title="Tendencia de pagos por entidad y concepto",
+    s["Valor_Texto"] = s["Valor"].map(cop)
+    
+    # Gráfica de tendencia por entidad y concepto con valores completos
+    f = px.line(s, x="Mes", y="Valor", color="Serie", markers=True, text="Valor_Texto",
+                title="Tendencia de pagos por entidad y concepto",
                 category_orders={"Mes": orden_meses}, hover_data={"Valor": ":,.0f"})
+    f.update_traces(textposition="top center")
     if log:
         f.update_yaxes(type="log")
     f.update_layout(legend=dict(orientation="h", y=-0.25), margin=dict(t=50), height=520)
@@ -223,7 +231,7 @@ with tab4:
         part = sub.loc[sub["Concepto"] == "Cápita", "Valor"].sum() / sub["Valor"].sum()
         cap = d[d["Concepto"] == "Cápita"].groupby("Mes")["Valor"].sum()
         notas.append(f"**Cápita:** pesa {part:.1%} del pago de las entidades que la tienen; su mes más alto fue "
-                     f"{cap.idxmax()} ({mm(cap.max())}) y el más bajo {cap.idxmin()} ({mm(cap.min())}). "
+                     f"{cap.idxmax()} ({cop(cap.max())}) y el más bajo {cap.idxmin()} ({cop(cap.min())}). "
                      "Debería ser estable; una variación grande merece revisión.")
 
     for n in notas:
