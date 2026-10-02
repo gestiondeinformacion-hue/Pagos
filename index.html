@@ -587,58 +587,6 @@ const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','
 const PAL = ['#0e7c6b','#d9822b','#3b6fd4','#c23b6b','#7a5bc7','#14b8a6','#f59e0b'];
 const $ = id => document.getElementById(id);
 
-const DATASET_DEMO = [
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":57541621},
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":51786149},
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":46593227},
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":81203649},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":704366508},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":1000071684},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":703878080},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":550046992},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":564131077},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":527823993},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":562198146},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":468307005},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":1080325441},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":5109883983},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":3864599649},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":4160886087},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":3759813406},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":3929478513},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":4545068427},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":4828465925},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":4452956838},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":4304733685},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":2536644618},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":2800250138},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":2526354982},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":2504648679},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":2645783690},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":2272595653},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":1959802625},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":2883939901},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":2679842771},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Cápita","valor":536439200},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Cápita","valor":558609162},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Cápita","valor":775321207},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Cápita","valor":565100198},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Cápita","valor":544428792},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Cápita","valor":711703610},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Cápita","valor":596147459},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Cápita","valor":604651440},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Cápita","valor":602659580},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":3543505400},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":4207272603},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":3924237224},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":3532517344},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":3587994775},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":3698749751},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":3895106886},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":4100089626},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":4188824715}
-];
-
 const fmt = new Intl.NumberFormat('es-CO', { 
   style: 'currency', 
   currency: 'COP', 
@@ -650,13 +598,14 @@ const cols = [
   ['mes','Mes'],['fecha','Fecha Giro'],['conc','Concepto'],['valor','Valor Pagado ($)']
 ];
 
-const sel = { conc: $('fC'), ent: $('fE'), nit: $('fN') };
+const sel = { conc: $('fC'), ent: $('fE'), nit:$('fN') };
 let sortK = 'mn', sortD = 1, cur = [], rows = [];
 
 function parseCSV(text) {
   if (!text || typeof text !== 'string') return [];
-  const cleanText = text.replace(/^\uFEFF/, '').trim();
-  const lines = cleanText.split(/\r?\n/).filter(x => x.trim());
+  // Normalizar retornos de carro \r\n y BOM
+  const cleanText = text.replace(/^\uFEFF/, '').replace(/\r/g, '').trim();
+  const lines = cleanText.split('\n').map(l => l.trim()).filter(x => x.length > 0);
   if (lines.length < 2) return [];
 
   let sep = '|';
@@ -664,41 +613,50 @@ function parseCSV(text) {
   else if (lines[0].includes(';')) sep = ';';
   else if (lines[0].includes(',')) sep = ',';
 
-  const headers = lines[0].split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
+  const headers = lines[0].split(sep).map(s => s.trim().replace(/^["']|["']$/g, '').toLowerCase());
   
-  const findIx = (names) => {
-    for (let name of names) {
-      const idx = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+  const findIx = (candidates) => {
+    for (let c of candidates) {
+      const idx = headers.findIndex(h => h === c || h.includes(c));
       if (idx !== -1) return idx;
     }
     return -1;
   };
 
   const ixNIT = findIx(['nit']);
-  const ixEnt = findIx(['entidad', 'entidad prestadora', 'ips']);
+  const ixEnt = findIx(['entidad', 'ips', 'prestador']);
   const ixAnio = findIx(['año', 'anio', 'year']);
   const ixMesNum = findIx(['mes_num', 'mesnum', 'num_mes', 'mes_numero']);
   const ixMes = findIx(['mes']);
-  const ixFecha = findIx(['fecha', 'fecha_giro', 'fechagiro']);
+  const ixFecha = findIx(['fecha', 'fechagiro']);
   const ixConc = findIx(['concepto', 'conc']);
-  const ixValor = findIx(['valor', 'monto', 'valor_pagado', 'val']);
+  const ixValor = findIx(['valor', 'monto', 'val']);
 
   return lines.slice(1).map((l, i) => {
     const p = l.split(sep).map(s => s.trim().replace(/^["']|["']$/g, ''));
     if (p.length < 2) return null;
 
-    const nit = ixNIT !== -1 && p[ixNIT] ? p[ixNIT] : '';
-    const ent = ixEnt !== -1 && p[ixEnt] ? p[ixEnt] : 'Entidad';
+    const nit = ixNIT !== -1 && p[ixNIT] !== undefined ? p[ixNIT] : '';
+    const ent = ixEnt !== -1 && p[ixEnt] !== undefined ? p[ixEnt] : 'Entidad';
     const anio = ixAnio !== -1 && !isNaN(+p[ixAnio]) ? +p[ixAnio] : 2026;
-    const mn = ixMesNum !== -1 && !isNaN(+p[ixMesNum]) ? +p[ixMesNum] : (i % 12) + 1;
-    const mes = ixMes !== -1 && p[ixMes] ? p[ixMes] : MES[mn - 1] || 'Ene';
+    const mn = ixMesNum !== -1 && !isNaN(+p[ixMesNum]) ? +p[ixMesNum] : 1;
+    const mes = ixMes !== -1 && p[ixMes] ? p[ixMes] : (MES[mn - 1] || 'Ene');
     const fecha = ixFecha !== -1 && p[ixFecha] ? p[ixFecha] : `${anio}-${String(mn).padStart(2, '0')}-01`;
     const conc = ixConc !== -1 && p[ixConc] ? p[ixConc] : 'Evento';
     
-    let rawVal = ixValor !== -1 ? p[ixValor] : '0';
-    if (typeof rawVal === 'string') {
-      rawVal = rawVal.replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
+    let rawVal = ixValor !== -1 && p[ixValor] !== undefined ? p[ixValor] : '0';
+    rawVal = rawVal.replace(/\$/g, '').replace(/\s/g, '');
+    if (rawVal.includes('.') && rawVal.includes(',')) {
+      rawVal = rawVal.replace(/\./g, '').replace(',', '.');
+    } else if (rawVal.includes('.')) {
+      const parts = rawVal.split('.');
+      if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+        rawVal = rawVal.replace(/\./g, '');
+      }
+    } else if (rawVal.includes(',')) {
+      rawVal = rawVal.replace(',', '.');
     }
+
     const valor = parseFloat(rawVal) || 0;
 
     return { nit, ent, anio, mn, mes, fecha, conc, valor };
@@ -926,7 +884,7 @@ $('file').onchange = e => {
   rd.onload = () => {
     const parsed = parseCSV(rd.result);
     if (!parsed.length) {
-      alert('Aviso: No se pudieron extraer filas con el separadores estándar. Verifica las columnas.');
+      alert('Aviso: No se pudieron extraer filas con los separadores estándar.');
       return;
     }
     rows = parsed;
@@ -937,24 +895,17 @@ $('file').onchange = e => {
 };
 
 function cargarDefault() {
-  const rutas = ["datos_dinamica.csv", "data/datos_dinamica.csv", "./datos_dinamica.csv"];
-  let cargado = false;
+  // Rutas posibles en el despliegue de Vercel
+  const rutas = ["data/datos_dinamica.csv", "./data/datos_dinamica.csv", "/data/datos_dinamica.csv", "datos_dinamica.csv"];
 
-  let intentar = idx => {
-    if (idx >= rutas.length) {
-      if (!cargado && rows.length === 0) {
-        rows = DATASET_DEMO;
-        update();
-      }
-      return;
-    }
+  let intentar = (idx) => {
+    if (idx >= rutas.length) return;
 
     fetch(rutas[idx])
       .then(r => { if (!r.ok) throw new Error(); return r.text(); })
       .then(t => {
         const parsed = parseCSV(t);
         if (parsed.length > 0) {
-          cargado = true;
           rows = parsed;
           update();
         } else {
