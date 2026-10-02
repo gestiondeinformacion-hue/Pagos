@@ -3,14 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Portal Ejecutivo de Pagos y Auditoría de Salud</title>
+<title>Portal Ejecutivo de Pagos y Auditoría de Salud 2026</title>
 
 <!-- Fuentes Tipográficas -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 
-<!-- SheetJS (XLSX) para lectura de Excel y PapaParse para CSV -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<!-- Librería SheetJS para lectura de Excel nativo -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 :root {
@@ -78,18 +77,8 @@ body {
   gap: 16px;
 }
 
-h1 {
-  font-size: 26px;
-  font-weight: 800;
-  margin: 0 0 6px;
-  letter-spacing: -0.02em;
-}
-
-.sub {
-  color: #cbd5e1;
-  font-size: 14px;
-  margin: 0;
-}
+h1 { font-size: 26px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.02em; }
+.sub { color: #cbd5e1; font-size: 14px; margin: 0; }
 
 .badge-tag {
   background: rgba(255,255,255,0.15);
@@ -102,6 +91,17 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.alert-banner {
+  background: #ffe4e6;
+  border: 1px solid #f43f5e;
+  color: #9f1239;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: none;
 }
 
 .panel {
@@ -156,25 +156,11 @@ button {
   gap: 8px;
 }
 
-button.btn-primary {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
-}
+button.btn-primary { background: var(--primary); border-color: var(--primary); color: #ffffff; }
+button.btn-primary:hover { background: var(--primary-hover); }
 
-button.btn-primary:hover {
-  background: var(--primary-hover);
-}
-
-button.btn-sec {
-  background: var(--panel-sub);
-  border-color: var(--border);
-  color: var(--text-main);
-}
-
-button.btn-sec:hover {
-  background: var(--border);
-}
+button.btn-sec { background: var(--panel-sub); border-color: var(--border); color: var(--text-main); }
+button.btn-sec:hover { background: var(--border); }
 
 .kpi-grid {
   display: grid;
@@ -199,30 +185,12 @@ button.btn-sec:hover {
   top: 0; left: 0; width: 4px; height: 100%;
   background: var(--primary);
 }
-
 .kpi-card.accent::before { background: var(--accent); }
 .kpi-card.danger::before { background: var(--danger); }
 
-.kpi-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-mute);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.kpi-value {
-  font-size: 22px;
-  font-weight: 700;
-  font-family: "IBM Plex Mono", monospace;
-  color: var(--text-main);
-  margin: 6px 0 2px;
-}
-
-.kpi-desc {
-  font-size: 12px;
-  color: var(--text-mute);
-}
+.kpi-title { font-size: 11px; font-weight: 700; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.6px; }
+.kpi-value { font-size: 22px; font-weight: 700; font-family: "IBM Plex Mono", monospace; color: var(--text-main); margin: 6px 0 2px; }
+.kpi-desc { font-size: 12px; color: var(--text-mute); }
 
 .analysis-panel {
   background: var(--primary-light);
@@ -260,10 +228,7 @@ button.btn-sec:hover {
   line-height: 1.5;
   color: var(--text-main);
 }
-
-.analysis-item strong {
-  color: var(--primary);
-}
+.analysis-item strong { color: var(--primary); }
 
 .chart-header {
   display: flex;
@@ -274,24 +239,10 @@ button.btn-sec:hover {
   margin-bottom: 14px;
 }
 
-.chart-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main);
-}
+.chart-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+.chart-subtitle { font-size: 12px; color: var(--text-mute); }
 
-.chart-subtitle {
-  font-size: 12px;
-  color: var(--text-mute);
-}
-
-#line-svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-
+#line-svg { width: 100%; height: auto; display: block; overflow: visible; }
 #line-svg .pt text {
   paint-order: stroke;
   stroke: var(--panel);
@@ -302,44 +253,14 @@ button.btn-sec:hover {
   font-weight: 600;
 }
 
-#line-svg.many .pt text {
-  opacity: 0;
-  pointer-events: none;
-}
+#line-svg.many .pt text { opacity: 0; pointer-events: none; }
+#line-svg.many .pt:hover text { opacity: 1; }
+#line-svg .pt circle { cursor: pointer; transition: r 0.2s ease; }
+#line-svg .pt:hover circle { r: 7; }
 
-#line-svg.many .pt:hover text {
-  opacity: 1;
-}
-
-#line-svg .pt circle {
-  cursor: pointer;
-  transition: r 0.2s ease;
-}
-
-#line-svg .pt:hover circle {
-  r: 7;
-}
-
-.legend-box {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 20px;
-  margin-top: 14px;
-  font-size: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-}
-
-.legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-}
+.legend-box { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 14px; font-size: 12px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; }
 
 .bar-chart {
   display: flex;
@@ -370,37 +291,13 @@ button.btn-sec:hover {
   min-height: 4px;
   transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.bar-fill:hover { background: var(--primary-hover); }
 
-.bar-fill:hover {
-  background: var(--primary-hover);
-}
+.bar-val { font-size: 10px; font-weight: 600; margin-bottom: 4px; color: var(--text-main); text-align: center; }
 
-.bar-val {
-  font-size: 10px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text-main);
-  text-align: center;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  margin-top: 12px;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  min-width: 800px;
-  font-size: 13px;
-}
-
-th, td {
-  padding: 12px 14px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
+.table-wrap { overflow-x: auto; margin-top: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 800px; font-size: 13px; }
+th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
 th {
   font-weight: 700;
   color: var(--text-mute);
@@ -413,49 +310,32 @@ th {
   position: sticky;
   top: 0;
 }
-
 th[aria-sort] { color: var(--primary); }
+td.num, th.num { text-align: right; font-family: "IBM Plex Mono", monospace; font-weight: 500; }
+tbody tr:hover { background: var(--primary-light); }
+tfoot td { font-weight: 700; background: var(--panel-sub); border-top: 2px solid var(--border); }
 
-td.num, th.num {
-  text-align: right;
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 500;
-}
-
-tbody tr:hover {
-  background: var(--primary-light);
-}
-
-tfoot td {
-  font-weight: 700;
-  background: var(--panel-sub);
-  border-top: 2px solid var(--border);
-}
-
-.tag-concept {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
+.tag-concept { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
 .tag-capita { background: var(--accent-light); color: var(--accent); }
 .tag-evento { background: var(--primary-light); color: var(--primary); }
 
-.empty-state {
-  padding: 40px;
-  text-align: center;
-  color: var(--text-mute);
+.empty-state { padding: 40px; text-align: center; color: var(--text-mute); }
+
+#loading-indicator {
+  background: rgba(14, 124, 107, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-@media (max-width: 900px) {
-  .filters-grid { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 600px) {
-  .filters-grid { grid-template-columns: 1fr; }
-  .header-title { flex-direction: column; }
-}
+@media (max-width: 900px) { .filters-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .filters-grid { grid-template-columns: 1fr; } .header-title { flex-direction: column; } }
 </style>
 </head>
 <body>
@@ -469,13 +349,19 @@ tfoot td {
       </div>
       <div class="badge-tag">
         <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        Datos Auditados · 2026
+        Lectura Excel Activa · 2026
       </div>
     </div>
   </div>
 </div>
 
 <div class="wrap" style="margin-top:20px;">
+
+  <div id="loading-indicator">
+    <span>⏳ Procesando datos desde el archivo Excel...</span>
+  </div>
+
+  <div id="status-alert" class="alert-banner"></div>
 
   <!-- Filtros Principales -->
   <div class="panel">
@@ -522,7 +408,7 @@ tfoot td {
     </div>
   </div>
 
-  <!-- Panel de Hallazgos y Análisis Automático de Datos -->
+  <!-- Panel de Hallazgos y Análisis Automático -->
   <div class="analysis-panel">
     <div class="analysis-header">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -564,8 +450,8 @@ tfoot td {
       </div>
       <div style="display:flex;gap:10px;">
         <input type="text" id="tableSearch" placeholder="Buscar en tabla..." style="width:200px;padding:6px 12px;font-size:12px;">
-        <button id="up" class="btn-primary">Cargar Excel / CSV</button>
-        <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt" hidden>
+        <button id="up" class="btn-primary">Cargar Otro Archivo</button>
+        <input type="file" id="file" accept=".xlsx,.xls,.csv" hidden>
       </div>
     </div>
 
@@ -593,59 +479,6 @@ const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','
 const PAL = ['#0e7c6b','#d9822b','#3b6fd4','#c23b6b','#7a5bc7','#14b8a6','#f59e0b'];
 const $ = id => document.getElementById(id);
 
-// Base de datos de respaldo preintegrada
-const DATASET_RESPALDO = [
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":57541621},
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":51786149},
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":46593227},
-  {"nit":"901054048","ent":"IMEDI Especialistas en Imágenes Diagnosticas S.A.S.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":81203649},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":704366508},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":1000071684},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":703878080},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":550046992},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":564131077},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":527823993},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":562198146},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":468307005},
-  {"nit":"811042050","ent":"SERVIUCIS S.A.S.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":1080325441},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":5109883983},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":3864599649},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":4160886087},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":3759813406},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":3929478513},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":4545068427},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":4828465925},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":4452956838},
-  {"nit":"900261353","ent":"FUNDACION HOSPITAL SAN VICENTE DE PAUL- RIONEGRO","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":4304733685},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":2536644618},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":2800250138},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":2526354982},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":2504648679},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":2645783690},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":2272595653},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":1959802625},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":2883939901},
-  {"nit":"890939936","ent":"SOCIEDAD MÉDICA RIONEGRO S.A. SOMER S.A.","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":2679842771},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Cápita","valor":536439200},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Cápita","valor":558609162},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Cápita","valor":775321207},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Cápita","valor":565100198},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Cápita","valor":544428792},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Cápita","valor":711703610},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Cápita","valor":596147459},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Cápita","valor":604651440},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Cápita","valor":602659580},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":1,"mes":"ene","fecha":"2026-01-01","conc":"Evento","valor":3543505400},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":2,"mes":"feb","fecha":"2026-02-01","conc":"Evento","valor":4207272603},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":3,"mes":"mar","fecha":"2026-03-01","conc":"Evento","valor":3924237224},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":4,"mes":"abr","fecha":"2026-04-01","conc":"Evento","valor":3532517344},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":5,"mes":"may","fecha":"2026-05-01","conc":"Evento","valor":3587994775},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":6,"mes":"jun","fecha":"2026-06-01","conc":"Evento","valor":3698749751},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":7,"mes":"jul","fecha":"2026-07-01","conc":"Evento","valor":3895106886},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":8,"mes":"ago","fecha":"2026-08-01","conc":"Evento","valor":4100089626},
-  {"nit":"890907254","ent":"HOSPITAL SAN JUAN DE DIOS E.S.E RIONEGRO - ANTIOQUIA","anio":2026,"mn":9,"mes":"sep","fecha":"2026-09-01","conc":"Evento","valor":4188824715}
-];
-
 const fmt = new Intl.NumberFormat('es-CO', { 
   style: 'currency', 
   currency: 'COP', 
@@ -660,31 +493,43 @@ const cols = [
 const sel = { conc: $('fC'), ent: $('fE'), nit:$('fN') };
 let sortK = 'mn', sortD = 1, cur = [], rows = [];
 
-function procesarFilasExcel(jsonData) {
-  if (!jsonData || !jsonData.length) return [];
-  
-  return jsonData.map((d, i) => {
-    const keys = Object.keys(d);
-    
+function normalizarTexto(texto) {
+  if (!texto) return "";
+  return texto.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function procesarFilasGenerico(rawRows) {
+  if (!rawRows || !rawRows.length) return [];
+
+  return rawRows.map((d, i) => {
+    let normObj = {};
+    for (let key in d) {
+      normObj[normalizarTexto(key)] = d[key];
+    }
+
     const getVal = (candidates) => {
       for (let c of candidates) {
-        const foundKey = keys.find(k => k.toLowerCase().replace(/^\uFEFF/, '').trim() === c.toLowerCase());
-        if (foundKey && d[foundKey] !== undefined && d[foundKey] !== null) {
-          return String(d[foundKey]).trim();
+        let nCand = normalizarTexto(c);
+        for (let k in normObj) {
+          if (k === nCand || k.includes(nCand)) {
+            if (normObj[k] !== undefined && normObj[k] !== null && normObj[k] !== "") {
+              return String(normObj[k]).trim();
+            }
+          }
         }
       }
-      return '';
+      return "";
     };
 
     const nit = getVal(['nit']);
-    const ent = getVal(['entidad', 'ips', 'prestador']) || 'Entidad';
-    const anio = parseInt(getVal(['año', 'anio', 'year'])) || 2026;
+    const ent = getVal(['entidad', 'ips', 'prestador', 'empresa']) || 'Entidad';
+    const anio = parseInt(getVal(['anio', 'año', 'year'])) || 2026;
     const mn = parseInt(getVal(['mes_num', 'mesnum', 'num_mes', 'mes_numero'])) || ((i % 12) + 1);
     const mes = getVal(['mes']) || MES[mn - 1] || 'Ene';
     const fecha = getVal(['fecha', 'fechagiro']) || `${anio}-${String(mn).padStart(2,'0')}-01`;
     const conc = getVal(['concepto', 'conc']) || 'Evento';
 
-    let rawVal = getVal(['valor', 'monto', 'val']);
+    let rawVal = getVal(['valor', 'monto', 'val', 'total']);
     if (typeof rawVal === 'string') {
       rawVal = rawVal.replace(/\$/g, '').replace(/\./g, '').replace(/,/g, '.').trim();
     }
@@ -908,6 +753,7 @@ $('head').addEventListener('click', e => {
 
 $('up').onclick = () =>$('file').click();
 
+// Carga manual de archivos Excel o CSV desde la computadora
 $('file').onchange = e => {
   const f = e.target.files[0];
   if (!f) return;
@@ -915,72 +761,84 @@ $('file').onchange = e => {
   const reader = new FileReader();
   reader.onload = function(evt) {
     try {
-      let parsed = [];
-      if (f.name.endsWith('.csv') || f.name.endsWith('.txt')) {
-        Papa.parse(f, {
-          header: true,
-          skipEmptyLines: true,
-          complete: function(res) {
-            parsed = procesarFilasExcel(res.data);
-            if (parsed.length > 0) {
-              rows = parsed;
-              Object.values(sel).forEach(s => s.value = '');
-              update();
-            }
-          }
-        });
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: "" });
+      
+      const parsed = procesarFilasGenerico(json);
+      if (parsed.length > 0) {
+        rows = parsed;
+        Object.values(sel).forEach(s => s.value = '');
+        $('loading-indicator').style.display = 'none';
+        update();
       } else {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-        parsed = procesarFilasExcel(json);
-        if (parsed.length > 0) {
-          rows = parsed;
-          Object.values(sel).forEach(s => s.value = '');
-          update();
-        }
+        alert("No se pudieron encontrar columnas válidas en el archivo seleccionado.");
       }
     } catch (err) {
-      console.error("Error al cargar archivo manual:", err);
+      alert("Error procesando archivo: " + err.message);
     }
   };
   reader.readAsArrayBuffer(f);
 };
 
-// Carga Inicial
-function inicializarSistema() {
-  const rutaExcel = "data/datos_dinamica.xlsx";
+// Carga automática basada en el patrón de fetch + ArrayBuffer
+async function cargarDatosExcel() {
+  const EXCEL_URL = "data/datos_dinamica.xlsx?t=" + new Date().getTime();
+  const loading = $('loading-indicator');
 
-  fetch(rutaExcel)
-    .then(res => {
-      if (!res.ok) throw new Error("HTTP error " + res.status);
-      return res.arrayBuffer();
-    })
-    .then(buffer => {
-      const data = new Uint8Array(buffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+  try {
+    const response = await fetch(EXCEL_URL);
+    if (!response.ok) throw new Error("HTTP Status " + response.status);
 
-      const parsed = procesarFilasExcel(json);
-      if (parsed.length > 0) {
-        rows = parsed;
-        update();
-      } else {
-        throw new Error("Sin registros válidos en Excel");
+    const arrayBuffer = await response.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: "array", cellDates: true });
+    const firstSheet = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[firstSheet];
+
+    // Detección dinámica de la fila del encabezado
+    const sheetMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+    let headerRowIndex = 0;
+    for (let i = 0; i < sheetMatrix.length; i++) {
+      const rowStr = sheetMatrix[i].map(c => normalizarTexto(c));
+      if (rowStr.some(c => c.includes("nit") || c.includes("entidad") || c.includes("valor"))) {
+        headerRowIndex = i;
+        break;
       }
-    })
-    .catch(err => {
-      console.warn("Intento de fetch de Excel no disponible. Cargando dataset integrado de respaldo...", err);
-      rows = DATASET_RESPALDO;
+    }
+
+    const json = XLSX.utils.sheet_to_json(sheet, { range: headerRowIndex, raw: false });
+    const parsed = procesarFilasGenerico(json);
+
+    if (parsed.length > 0) {
+      rows = parsed;
+      loading.style.display = "none";
       update();
-    });
+    } else {
+      throw new Error("No se encontraron registros en las celdas del Excel");
+    }
+  } catch (error) {
+    console.warn("No se pudo cargar desde el servidor local/Vercel (" + error.message + "). Aplicando dataset de respaldo...", error);
+    loading.style.display = "none";
+    
+    // Intenta leer CSV alternativo o usa el respaldo integrado
+    fetch("data/datos_dinamica.csv")
+      .then(r => r.text())
+      .then(t => {
+        const parsedCsv = procesarFilasGenerico(Papa.parse(t, { header: true }).data);
+        if (parsedCsv.length > 0) rows = parsedCsv;
+        else rows = DATASET_RESPALDO;
+        update();
+      })
+      .catch(() => {
+        rows = DATASET_RESPALDO;
+        update();
+      });
+  }
 }
 
-inicializarSistema();
+window.addEventListener("DOMContentLoaded", cargarDatosExcel);
 </script>
 </body>
 </html>
