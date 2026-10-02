@@ -3,66 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Datos</title>
-    <!-- Importar SheetJS para leer Excel desde el cliente -->
+    <title>Dashboard Analítico de Datos</title>
+    <!-- Importar SheetJS para leer Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <!-- Importar Chart.js para graficar -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             padding: 20px;
-            background-color: #f4f7f6;
+            background-color: #f0f2f5;
             color: #333;
+            margin: 0;
         }
+        h1 { margin-bottom: 5px; color: #1a1a1a; }
+        p { color: #666; margin-bottom: 30px; }
+        
+        /* Cuadrícula para mostrar los gráficos estilo Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .chart-container {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
             background: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #444;
         }
     </style>
 </head>
 <body>
-    <h1>Dashboard - Datos Dinámicos</h1>
-    <p>Visualización de datos desde <code>data/datos_dinamica.xlsx</code></p>
+    <h1>Dashboard Analítico</h1>
+    <p>Visualización múltiple de <code>data/datos_dinamica.xlsx</code></p>
     
-    <div class="chart-container">
-        <canvas id="miGrafico"></canvas>
+    <div id="mensajeError"></div>
+
+    <div class="dashboard-grid">
+        <!-- Contenedores para los 4 gráficos -->
+        <div class="chart-container">
+            <div class="chart-title">Gráfico de Barras (Comparación)</div>
+            <canvas id="graficoBarras"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Gráfico de Líneas (Tendencia)</div>
+            <canvas id="graficoLineas"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Gráfico de Pastel (Proporción)</div>
+            <canvas id="graficoPastel"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Gráfico de Dona (Distribución)</div>
+            <canvas id="graficoDona"></canvas>
+        </div>
     </div>
 
     <script>
         async function cargarDatosYGraficar() {
             try {
-                // 1. Obtener el archivo Excel usando la ruta de tu repositorio
+                // 1. Obtener el archivo Excel
                 const response = await fetch('./data/datos_dinamica.xlsx');
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar el archivo Excel.');
-                }
+                if (!response.ok) throw new Error('No se pudo cargar el archivo Excel.');
                 const arrayBuffer = await response.arrayBuffer();
 
                 // 2. Leer el archivo con SheetJS
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                
-                // 3. Tomar la primera hoja del Excel
                 const primeraHojaName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[primeraHojaName];
 
-                // 4. Convertir los datos de la hoja a formato JSON
+                // 3. Convertir a JSON
                 const datosJson = XLSX.utils.sheet_to_json(worksheet);
-
                 if (datosJson.length === 0) {
-                    alert("El archivo Excel está vacío o no se pudo leer correctamente.");
+                    alert("El archivo Excel está vacío.");
                     return;
                 }
 
-                // 5. Preparar los datos para Chart.js
-                // El script asume automáticamente que la PRIMERA columna son las etiquetas (Eje X) 
-                // y la SEGUNDA columna son los valores (Eje Y).
+                // 4. Extraer etiquetas y valores
                 const llaves = Object.keys(datosJson[0]);
                 const columnaEtiquetas = llaves[0]; 
                 const columnaValores = llaves[1];
@@ -70,10 +103,20 @@
                 const etiquetas = datosJson.map(fila => fila[columnaEtiquetas]);
                 const valores = datosJson.map(fila => fila[columnaValores]);
 
-                // 6. Crear el gráfico con Chart.js
-                const ctx = document.getElementById('miGrafico').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar', // Puedes cambiar esto a 'line', 'pie', 'doughnut', etc.
+                // Paleta de colores para gráficos circulares
+                const bgColors = [
+                    'rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)', 
+                    'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 
+                    'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)',
+                    'rgba(199, 199, 199, 0.6)', 'rgba(83, 102, 255, 0.6)'
+                ];
+                const borderColors = bgColors.map(color => color.replace('0.6', '1'));
+
+                // 5. Crear los 4 gráficos
+                
+                // --- Gráfico de Barras ---
+                new Chart(document.getElementById('graficoBarras').getContext('2d'), {
+                    type: 'bar',
                     data: {
                         labels: etiquetas,
                         datasets: [{
@@ -83,24 +126,61 @@
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1
                         }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
                     }
                 });
+
+                // --- Gráfico de Líneas ---
+                new Chart(document.getElementById('graficoLineas').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: etiquetas,
+                        datasets: [{
+                            label: columnaValores,
+                            data: valores,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3 // Curva suave
+                        }]
+                    }
+                });
+
+                // --- Gráfico de Pastel (Pie) ---
+                new Chart(document.getElementById('graficoPastel').getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: etiquetas,
+                        datasets: [{
+                            data: valores,
+                            backgroundColor: bgColors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    }
+                });
+
+                // --- Gráfico de Dona (Doughnut) ---
+                new Chart(document.getElementById('graficoDona').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: etiquetas,
+                        datasets: [{
+                            data: valores,
+                            backgroundColor: bgColors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    }
+                });
+
             } catch (error) {
-                console.error("Error al procesar el archivo Excel:", error);
-                document.querySelector('.chart-container').innerHTML = 
-                    `<p style="color: red;">Error al cargar los datos. Asegúrate de que el archivo <b>./data/datos_dinamica.xlsx</b> exista y se encuentre en esa ruta.</p>`;
+                console.error("Error:", error);
+                document.getElementById('mensajeError').innerHTML = 
+                    `<p style="color: red; font-weight: bold;">Error al cargar los datos. Asegúrate de que el archivo <b>./data/datos_dinamica.xlsx</b> exista.</p>`;
             }
         }
 
-        // Ejecutar la función en cuanto cargue la página
         window.onload = cargarDatosYGraficar;
     </script>
 </body>
