@@ -95,13 +95,28 @@
                     return;
                 }
 
-                // 4. Extraer etiquetas y valores
-                const llaves = Object.keys(datosJson[0]);
-                const columnaEtiquetas = llaves[0]; 
-                const columnaValores = llaves[1];
+                // ====================================================================
+                // 4. EXTRAER ETIQUETAS Y VALORES (¡MODIFICA ESTO!)
+                // ====================================================================
+                // Reemplaza los textos entre comillas por los nombres EXACTOS 
+                // de los encabezados de tu Excel.
+                
+                const columnaEtiquetas = 'NOMBRE_COLUMNA_ETIQUETAS'; // Ejemplo: 'ID', 'Mes', 'Entidad'
+                const columnaValores = 'NOMBRE_COLUMNA_VALORES';     // Ejemplo: 'Monto', 'Ventas', 'Total'
+                
+                // ====================================================================
+
+                // Verifica si las columnas ingresadas existen en el Excel
+                if (!(columnaEtiquetas in datosJson[0]) || !(columnaValores in datosJson[0])) {
+                    document.getElementById('mensajeError').innerHTML = 
+                        `<p style="color: red; font-weight: bold;">Error: Las columnas "${columnaEtiquetas}" o "${columnaValores}" no existen en el Excel. Revisa los nombres de los encabezados.</p>`;
+                    return;
+                }
 
                 const etiquetas = datosJson.map(fila => fila[columnaEtiquetas]);
-                const valores = datosJson.map(fila => fila[columnaValores]);
+                
+                // Asegurarnos de que los valores se traten como números (parseamos a Float)
+                const valores = datosJson.map(fila => parseFloat(fila[columnaValores]) || 0);
 
                 // Paleta de colores para gráficos circulares
                 const bgColors = [
@@ -177,7 +192,7 @@
             } catch (error) {
                 console.error("Error:", error);
                 document.getElementById('mensajeError').innerHTML = 
-                    `<p style="color: red; font-weight: bold;">Error al cargar los datos. Asegúrate de que el archivo <b>./data/datos_dinamica.xlsx</b> exista.</p>`;
+                    `<p style="color: red; font-weight: bold;">Error al cargar los datos. Asegúrate de que el archivo <b>./data/datos_dinamica.xlsx</b> exista y sea accesible.</p>`;
             }
         }
 
